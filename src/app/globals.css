@@ -1,0 +1,137 @@
+@import "tailwindcss";
+
+/*
+  Happy Builds design tokens.
+  Brand: navy #0A1930 (from logo), warm off-white #FDFCF7, playful coral + amber.
+  Friendly (rounded, warm) + professional (calm navy, clean grid).
+*/
+
+@theme {
+  /* Brand palette */
+  --color-navy-50: #eef1f6;
+  --color-navy-100: #d4dbe7;
+  --color-navy-200: #a7b4c9;
+  --color-navy-300: #7587a6;
+  --color-navy-400: #45597d;
+  --color-navy-500: #243859;
+  --color-navy-600: #16243f;
+  --color-navy-700: #0f1b30;
+  --color-navy-800: #0a1930; /* primary brand navy */
+  --color-navy-900: #060f1e;
+
+  --color-cream: #fdfcf7; /* logo off-white background */
+
+  /* Accents */
+  --color-coral-400: #ff836a;
+  --color-coral-500: #ff5c39; /* primary CTA */
+  --color-coral-600: #ed4321;
+  --color-amber-400: #ffc861;
+  --color-amber-500: #f5b544; /* secondary highlight */
+  --color-mint-500: #2bb39a; /* tertiary, success */
+
+  /* Semantic tokens (light theme defaults) */
+  --color-background: var(--color-cream);
+  --color-surface: #ffffff;
+  --color-foreground: var(--color-navy-800);
+  --color-muted: #5b6679;
+  --color-border: #e7e2d6;
+  --color-primary: var(--color-navy-800);
+  --color-accent: var(--color-coral-500);
+
+  /* Typography */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-jakarta), var(--font-inter), sans-serif;
+
+  /* Radii — rounded + friendly */
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.75rem;
+  --radius-3xl: 2.5rem;
+
+  /* Soft shadows */
+  --shadow-soft: 0 4px 24px -8px rgba(10, 25, 48, 0.12);
+  --shadow-lift: 0 18px 48px -16px rgba(10, 25, 48, 0.22);
+
+  /* Motion */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Dark theme (class-based; toggled via <html class="dark">) */
+.dark {
+  --color-background: var(--color-navy-900);
+  --color-surface: var(--color-navy-800);
+  --color-foreground: #f4f6fb;
+  --color-muted: #9fadc4;
+  --color-border: #1c2c47;
+  --color-primary: #ffffff;
+}
+
+@layer base {
+  html {
+    /* Lenis controls smooth scroll; keep native off to avoid double-smoothing */
+    scroll-behavior: auto;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--color-foreground);
+  }
+
+  ::selection {
+    background-color: var(--color-coral-500);
+    color: #fff;
+  }
+
+  /* Lenis: disable smoothing for users who prefer reduced motion */
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Reusable bits */
+@utility text-gradient {
+  background: linear-gradient(
+    100deg,
+    var(--color-navy-800),
+    var(--color-navy-500)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Soft dotted/grid backdrop used behind hero + sections */
+.bg-dotted {
+  background-image: radial-gradient(
+    var(--color-border) 1px,
+    transparent 1px
+  );
+  background-size: 22px 22px;
+}
