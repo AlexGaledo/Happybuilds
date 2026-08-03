@@ -72,7 +72,7 @@ export function Hero() {
           </h1>
 
           <p className="hero-sub mt-6 max-w-xl text-lg leading-relaxed text-muted">
-            We&apos;re Happy Builds — a software studio that automates the boring
+            We&apos;re Fickles — a software studio that automates the boring
             stuff, builds internal tools your team loves, and ships friendly
             websites that convert. Big-agency quality, minus the headache.
           </p>
@@ -94,8 +94,8 @@ export function Hero() {
         <div className="lg:col-span-5">
           <div className="hero-art relative mx-auto max-w-sm">
             <Image
-              src="/brand/happybuilds-navy.png"
-              alt="The Happy Builds paintbrush mascot"
+              src="/brand/fickles-navy.png"
+              alt="The Fickles paintbrush mascot"
               width={1264}
               height={1264}
               priority

@@ -12,7 +12,7 @@ import { process, services } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Services",
   description:
-    "From tiny automations to full custom platforms, Happy Builds right-sizes the solution to the problem in front of you — automation, internal tools, websites, and custom software.",
+    "From tiny automations to full custom platforms, Fickles right-sizes the solution to the problem in front of you — automation, internal tools, websites, and custom software.",
 };
 
 export default function ServicesPage() {

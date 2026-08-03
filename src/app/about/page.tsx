@@ -9,7 +9,7 @@ import { values } from "@/lib/site";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Happy Builds is a small, friendly software studio shipping automations, internal tools, websites, and custom software for teams that want to move faster without the headache.",
+    "Fickles is a small, friendly software studio shipping automations, internal tools, websites, and custom software for teams that want to move faster without the headache.",
 };
 
 /** "By the numbers" strip — small, friendly proof points. */
@@ -66,7 +66,7 @@ export default function AboutPage() {
         />
         <Reveal className="mx-auto mt-10 max-w-2xl space-y-5 text-lg leading-relaxed text-muted">
           <p>
-            Happy Builds started with a simple itch: too many great teams were
+            Fickles started with a simple itch: too many great teams were
             stuck doing repetitive work by hand, wrestling spreadsheets, or
             making do with software that fought them at every turn. We thought
             building should feel lighter than that.

@@ -1,5 +1,5 @@
 /**
- * Thin client for the Happy Builds lead backend (happybuilds-automated-lead).
+ * Thin client for the Fickles lead backend (fickles-automated-lead).
  * The frontend ONLY talks to these endpoints — it never touches Supabase directly.
  */
 

@@ -18,7 +18,7 @@ import { caseStudies } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Work",
   description:
-    "A look at recent builds from Happy Builds — automations, internal tools, websites, and custom software that made everyday work feel lighter.",
+    "A look at recent builds from Fickles — automations, internal tools, websites, and custom software that made everyday work feel lighter.",
 };
 
 export default function PortfolioPage() {

@@ -12,7 +12,7 @@ interface LogoProps {
 }
 
 /**
- * Happy Builds logo. The mark is a paintbrush stroke with a smiley face.
+ * Fickles logo. The mark is a paintbrush stroke with a smiley face.
  * Light surfaces use the navy lockup; dark surfaces use the white one.
  */
 export function Logo({
@@ -24,14 +24,14 @@ export function Logo({
   const markSrc =
     theme === "dark" ? "/brand/icon-white-512.png" : "/brand/icon-512.png";
   const fullSrc =
-    theme === "dark" ? "/brand/happybuilds-white.png" : "/brand/happybuilds-navy.png";
+    theme === "dark" ? "/brand/fickles-white.png" : "/brand/fickles-navy.png";
 
   if (variant === "full") {
     return (
-      <Link href="/" aria-label="Happy Builds home" className={cn("inline-block", className)}>
+      <Link href="/" aria-label="Fickles home" className={cn("inline-block", className)}>
         <Image
           src={fullSrc}
-          alt="Happy Builds"
+          alt="Fickles"
           width={1264}
           height={1264}
           priority={priority}
@@ -43,10 +43,10 @@ export function Logo({
 
   if (variant === "mark") {
     return (
-      <Link href="/" aria-label="Happy Builds home" className={cn("inline-block", className)}>
+      <Link href="/" aria-label="Fickles home" className={cn("inline-block", className)}>
         <Image
           src={markSrc}
-          alt="Happy Builds"
+          alt="Fickles"
           width={512}
           height={512}
           priority={priority}
@@ -59,7 +59,7 @@ export function Logo({
   return (
     <Link
       href="/"
-      aria-label="Happy Builds home"
+      aria-label="Fickles home"
       className={cn("group inline-flex items-center gap-2.5", className)}
     >
       <Image
@@ -76,7 +76,7 @@ export function Logo({
           theme === "dark" ? "text-white" : "text-navy-800",
         )}
       >
-        happybuilds<span className="text-coral-500">.me</span>
+        fickles<span className="text-coral-500">.tech</span>
       </span>
     </Link>
   );

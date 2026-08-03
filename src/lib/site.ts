@@ -1,17 +1,17 @@
 /** Central site config + marketing content (placeholder copy, edit freely). */
 
 export const site = {
-  name: "Happy Builds",
-  domain: "happybuilds.me",
-  url: "https://happybuilds.me",
+  name: "Fickles",
+  domain: "fickles.tech",
+  url: "https://fickles.tech",
   tagline: "Software that makes work feel lighter.",
   description:
-    "Happy Builds designs and ships digital and technical solutions — automations, internal tools, and friendly websites — for businesses that want to move faster without the headache.",
-  email: "hello@happybuilds.me",
+    "Fickles designs and ships digital and technical solutions — automations, internal tools, and friendly websites — for businesses that want to move faster without the headache.",
+  email: "hello@fickles.tech",
   social: {
-    github: "https://github.com/happybuilds",
-    linkedin: "https://www.linkedin.com/company/happybuilds",
-    x: "https://x.com/happybuilds",
+    github: "https://github.com/fickles",
+    linkedin: "https://www.linkedin.com/company/fickles",
+    x: "https://x.com/fickles",
   },
 } as const;
 
@@ -206,7 +206,7 @@ export interface Testimonial {
 export const testimonials: Testimonial[] = [
   {
     quote:
-      "Happy Builds took something we dreaded every morning and just… made it disappear. The team is sharp and genuinely pleasant to work with.",
+      "Fickles took something we dreaded every morning and just… made it disappear. The team is sharp and genuinely pleasant to work with.",
     name: "Devon Lee",
     role: "Operations Lead, LogiFlow",
   },

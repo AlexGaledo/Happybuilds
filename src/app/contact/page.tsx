@@ -7,7 +7,7 @@ import { site } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Contact",
   description:
-    "Tell us what's slowing you down. Happy Builds replies within one business day with honest next steps — no pressure, no jargon.",
+    "Tell us what's slowing you down. Fickles replies within one business day with honest next steps — no pressure, no jargon.",
 };
 
 /** What happens after someone hits "Send" — sets expectations up front. */
