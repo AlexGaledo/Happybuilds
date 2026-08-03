@@ -38,8 +38,7 @@ export function PostingActivity({
   // Chart geometry in a viewBox — the SVG scales to its container rather than
   // needing a resize observer.
   const W = 720;
-  const H = 160;
-  const PAD_BOTTOM = 22;
+  const H = 150;
   const gap = 2;
   const barWidth = Math.max((W - gap * (series.length - 1)) / series.length, 1);
 
@@ -52,7 +51,7 @@ export function PostingActivity({
         </p>
         {/* Legend, adjacent to the chart rather than below a fold. */}
         <p className="flex items-center gap-1.5 text-xs text-muted">
-          <span aria-hidden className="inline-block size-2.5 rounded-sm bg-navy-500" />
+          <span aria-hidden className="inline-block size-2.5 rounded-sm bg-navy-500 dark:bg-navy-200" />
           Posts per hour
           <span aria-hidden className="ml-2 inline-block size-2.5 rounded-sm bg-coral-500" />
           Busiest hour
@@ -60,58 +59,78 @@ export function PostingActivity({
       </div>
 
       <div className="overflow-x-auto px-5 pb-2 pt-3">
-        <svg
-          aria-hidden
-          role="presentation"
-          viewBox={`0 0 ${W} ${H}`}
-          preserveAspectRatio="none"
-          className="h-40 w-full min-w-[520px]"
-        >
-          {/* Subtle gridlines: reference without competing with the data. */}
-          {[0.25, 0.5, 0.75, 1].map((f) => (
-            <line
-              key={f}
-              x1={0}
-              x2={W}
-              y1={(H - PAD_BOTTOM) * (1 - f)}
-              y2={(H - PAD_BOTTOM) * (1 - f)}
-              stroke="currentColor"
-              strokeWidth={1}
-              className="text-border"
-            />
+        <div className="relative min-w-[520px]">
+          <svg
+            aria-hidden
+            role="presentation"
+            viewBox={`0 0 ${W} ${H}`}
+            preserveAspectRatio="none"
+            className="block h-36 w-full"
+          >
+            {/* Subtle gridlines: reference without competing with the data. */}
+            {[0.25, 0.5, 0.75, 1].map((f) => (
+              <line
+                key={f}
+                x1={0}
+                x2={W}
+                y1={H * (1 - f)}
+                y2={H * (1 - f)}
+                stroke="currentColor"
+                strokeWidth={1}
+                vectorEffect="non-scaling-stroke"
+                className="text-border"
+              />
+            ))}
+            {series.map((bucket, i) => {
+              if (!bucket.count) return null;
+              const height = Math.max((bucket.count / max) * H, 2);
+              const isPeak = bucket.bucket === peak.bucket;
+              return (
+                <path
+                  key={bucket.bucket}
+                  d={barPath(i * (barWidth + gap), H - height, barWidth, height)}
+                  className={
+                    isPeak ? "fill-coral-500" : "fill-navy-500/70 dark:fill-navy-200/70"
+                  }
+                />
+              );
+            })}
+          </svg>
+
+          {/* Hover layer. The bars live in a `preserveAspectRatio="none"` SVG,
+              which would distort any text inside it, so labels and tooltips are
+              HTML overlaid on top. CSS-only: no JS, and it cannot go stale. The
+              sr-only table below is the accessible equivalent — 48 tab stops
+              would be worse than none. */}
+          <div aria-hidden className="absolute inset-0 flex">
+            {series.map((bucket) => (
+              <div
+                key={`h-${bucket.bucket}`}
+                className="group relative min-w-0 flex-1"
+              >
+                <div className="h-full w-full group-hover:bg-navy-800/[0.06] dark:group-hover:bg-white/10" />
+                <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-navy-800 px-2 py-1 text-[11px] font-medium text-white shadow-lift group-hover:block dark:bg-navy-700">
+                  {hourLabel(bucket.bucket)} ·{" "}
+                  <span className="tabular-nums">{bucket.count}</span>
+                  {bucket.count === 1 ? " post" : " posts"}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Axis labels every 6 hours, in HTML so they are never scaled. */}
+        <div aria-hidden className="mt-1.5 flex min-w-[520px]">
+          {series.map((bucket, i) => (
+            <div key={`t-${bucket.bucket}`} className="min-w-0 flex-1">
+              {i % 6 === 0 && (
+                <span className="text-[10px] tabular-nums text-muted">
+                  {hourLabel(bucket.bucket)}
+                </span>
+              )}
+            </div>
           ))}
-          {series.map((bucket, i) => {
-            const height = (bucket.count / max) * (H - PAD_BOTTOM);
-            const isPeak = bucket.bucket === peak.bucket && bucket.count > 0;
-            return (
-              <rect
-                key={bucket.bucket}
-                x={i * (barWidth + gap)}
-                y={H - PAD_BOTTOM - height}
-                width={barWidth}
-                height={Math.max(height, bucket.count > 0 ? 2 : 0)}
-                rx={1.5}
-                className={isPeak ? "fill-coral-500" : "fill-navy-500/70"}
-              >
-                <title>{`${hourLabel(bucket.bucket)} — ${bucket.count} posts`}</title>
-              </rect>
-            );
-          })}
-          {/* Axis ticks every 6 hours; more would cram on narrow screens. */}
-          {series.map((bucket, i) =>
-            i % 6 === 0 ? (
-              <text
-                key={`t-${bucket.bucket}`}
-                x={i * (barWidth + gap)}
-                y={H - 6}
-                className="fill-current text-[10px] text-muted"
-                style={{ fontSize: 10 }}
-              >
-                {hourLabel(bucket.bucket)}
-              </text>
-            ) : null,
-          )}
-        </svg>
+        </div>
       </div>
 
       <figcaption className="px-5 pb-4 text-xs leading-relaxed text-muted">
@@ -142,6 +161,26 @@ export function PostingActivity({
       </table>
     </figure>
   );
+}
+
+/**
+ * A bar with only its top corners rounded.
+ *
+ * `rx` on a <rect> rounds all four, which detaches the mark from the baseline
+ * and turns short bars into pills. The radius is also clamped to half the bar
+ * height so a 2px bar does not curl into a lens.
+ */
+function barPath(x: number, y: number, w: number, h: number, r = 2): string {
+  const radius = Math.min(r, w / 2, h);
+  return [
+    `M${x},${y + h}`,
+    `V${y + radius}`,
+    `Q${x},${y} ${x + radius},${y}`,
+    `H${x + w - radius}`,
+    `Q${x + w},${y} ${x + w},${y + radius}`,
+    `V${y + h}`,
+    "Z",
+  ].join(" ");
 }
 
 /** "14:00" — hour granularity is stated in the caption, so the label stays short. */

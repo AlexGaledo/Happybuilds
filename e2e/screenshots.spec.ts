@@ -15,7 +15,12 @@ test.describe("@screenshot", () => {
     await page.setViewportSize({ width: 1440, height: 960 });
 
     await page.goto("/dashboard");
-    await expect(page.getByRole("heading", { name: "Overview" })).toBeVisible();
+    // Wait for real content, not the heading — the loading skeleton also has an
+    // "Overview" heading, so keying on that captured a page of grey blocks when
+    // the API was briefly unreachable.
+    await expect(page.getByText("Total leads")).toBeVisible();
+    await expect(page.getByText("Posting activity")).toBeVisible();
+    await expect(page.locator("figure").first()).toContainText("/hour average");
     await page.screenshot({ path: `${DIR}/01-overview.png`, fullPage: true });
 
     await page.goto("/dashboard/leads");
