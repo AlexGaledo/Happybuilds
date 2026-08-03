@@ -50,7 +50,7 @@ export default function PortfolioPage() {
                     <Badge tone={caseStudy.accent}>{caseStudy.category}</Badge>
                     <span className="text-sm text-muted">{caseStudy.year}</span>
                   </div>
-                  <h2 className="mt-4 text-2xl font-bold transition-colors group-hover:text-coral-500">
+                  <h2 className="mt-4 text-2xl font-bold transition-colors group-hover:text-coral-ink">
                     {caseStudy.title}
                   </h2>
                   <p className="mt-1 text-sm font-semibold text-muted">

@@ -25,9 +25,9 @@ export function StatCard({
 }) {
   const accents = {
     navy: "text-navy-500 bg-navy-800/6 dark:bg-white/10 dark:text-navy-50",
-    coral: "text-coral-600 bg-coral-500/12",
-    amber: "text-amber-600 bg-amber-500/16",
-    mint: "text-mint-500 bg-mint-500/14",
+    coral: "text-coral-ink bg-coral-500/12",
+    amber: "text-amber-ink bg-amber-500/16",
+    mint: "text-mint-ink bg-mint-500/14",
   } as const;
 
   return (

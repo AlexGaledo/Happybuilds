@@ -113,7 +113,7 @@ export default async function LeadsPage({
                   href={closeHref}
                   scroll={false}
                   data-testid="lead-detail-close"
-                  className="rounded-full px-3 py-1.5 text-sm font-semibold text-coral-600 hover:bg-coral-500/8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500"
+                  className="rounded-full px-3 py-1.5 text-sm font-semibold text-coral-ink hover:bg-coral-500/8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500"
                 >
                   Close
                 </Link>

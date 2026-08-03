@@ -47,10 +47,10 @@ export function LabelledField({
     <div className="flex flex-col gap-1.5">
       <label htmlFor={htmlFor} className="text-sm font-semibold text-foreground">
         {label}
-        {required && <span className="text-coral-500"> *</span>}
+        {required && <span className="text-coral-ink"> *</span>}
       </label>
       {children}
-      {error && <p className="text-sm font-medium text-coral-600">{error}</p>}
+      {error && <p className="text-sm font-medium text-coral-ink">{error}</p>}
     </div>
   );
 }

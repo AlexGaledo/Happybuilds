@@ -83,7 +83,7 @@ export default async function CaseStudyPage({ params }: PageProps) {
         <Reveal>
           <Link
             href="/portfolio"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted transition-colors hover:text-coral-500"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted transition-colors hover:text-coral-ink"
           >
             <ArrowLeft size={15} /> All work
           </Link>
@@ -110,7 +110,7 @@ export default async function CaseStudyPage({ params }: PageProps) {
           <Card className="grid grid-cols-1 gap-8 sm:grid-cols-3">
             {caseStudy.metrics.map((metric) => (
               <div key={metric.label} className="text-center sm:text-left">
-                <p className="font-display text-3xl font-extrabold text-coral-500">
+                <p className="font-display text-3xl font-extrabold text-coral-ink">
                   {metric.value}
                 </p>
                 <p className="mt-1 text-sm text-muted">{metric.label}</p>
@@ -126,7 +126,7 @@ export default async function CaseStudyPage({ params }: PageProps) {
           {narrativeBlocks.map((block) => (
             <Reveal key={block.key}>
               <div className="grid gap-3 sm:grid-cols-[14rem_1fr] sm:gap-8">
-                <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-coral-500">
+                <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-coral-ink">
                   {block.label}
                 </h2>
                 <p className="max-w-2xl text-lg leading-relaxed text-foreground">
@@ -168,12 +168,12 @@ export default async function CaseStudyPage({ params }: PageProps) {
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-muted">
                   Next up
                 </p>
-                <h2 className="mt-2 text-2xl font-bold transition-colors group-hover:text-coral-500">
+                <h2 className="mt-2 text-2xl font-bold transition-colors group-hover:text-coral-ink">
                   {moreWork.title}
                 </h2>
                 <p className="mt-1 text-muted">{moreWork.summary}</p>
               </div>
-              <span className="mt-5 inline-flex shrink-0 items-center gap-1.5 font-semibold text-navy-800 transition-colors group-hover:text-coral-500 sm:mt-0">
+              <span className="mt-5 inline-flex shrink-0 items-center gap-1.5 font-semibold text-navy-800 transition-colors group-hover:text-coral-ink sm:mt-0">
                 See the build <ArrowRight size={16} />
               </span>
             </Card>

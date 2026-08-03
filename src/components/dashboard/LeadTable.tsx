@@ -235,7 +235,7 @@ function SortLink({
       {label}
       <Icon
         aria-hidden
-        className={cn("size-3.5", active ? "text-coral-500" : "text-muted/60")}
+        className={cn("size-3.5", active ? "text-coral-ink" : "text-muted/60")}
       />
       <span className="sr-only">
         {active
@@ -279,7 +279,7 @@ function Row({
           data-testid="lead-row-link"
           className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500"
         >
-          <span className="block truncate font-semibold text-foreground group-hover:text-coral-600">
+          <span className="block truncate font-semibold text-foreground group-hover:text-coral-ink">
             {listing.title}
           </span>
           <span className="mt-0.5 block truncate text-xs leading-relaxed text-muted">
@@ -327,7 +327,7 @@ function Row({
         {listing.email ? (
           <a
             href={`mailto:${listing.email}`}
-            className="truncate text-coral-600 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500"
+            className="truncate text-coral-ink underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500"
           >
             {listing.email}
           </a>

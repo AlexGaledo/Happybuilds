@@ -59,6 +59,10 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
             <span className="flex-1 truncate">{item.label}</span>
             {item.locked && (
               <span
+                // amber-400, not amber-ink: this badge sits on the navy-900
+                // rail. The `-ink` steps are darkened for light surfaces and
+                // would be near-invisible here — accent tokens are only
+                // accessible relative to the surface they land on.
                 className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-400"
                 title={item.lockReason}
               >
@@ -86,7 +90,13 @@ function Brand() {
       href="/"
       className="flex items-center gap-2.5 rounded-xl px-1 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-400"
     >
-      <span className="grid size-8 place-items-center rounded-lg bg-coral-500 font-display text-sm font-extrabold text-white">
+      {/* data-brand-mark: the glyph is a logotype, which WCAG 1.4.3 exempts
+          from the contrast minimum. Marked so the contrast audit can skip it
+          deliberately rather than by accident. */}
+      <span
+        data-brand-mark
+        className="grid size-8 place-items-center rounded-lg bg-coral-500 font-display text-sm font-extrabold text-white"
+      >
         F
       </span>
       <span className="flex flex-col leading-tight">

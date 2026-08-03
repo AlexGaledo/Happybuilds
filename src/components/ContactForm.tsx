@@ -97,7 +97,7 @@ export function ContactForm() {
   if (isSubmitted) {
     return (
       <Card className="text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-mint-500/12 text-mint-500">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-mint-500/12 text-mint-ink">
           <CheckCircle2 size={32} />
         </div>
         <h2 className="mt-6 text-2xl font-bold">Message sent — thank you!</h2>
@@ -115,7 +115,7 @@ export function ContactForm() {
       {submitError && (
         <div
           role="alert"
-          className="mb-6 flex items-start gap-3 rounded-2xl bg-coral-500/10 px-4 py-3 text-sm font-medium text-coral-600"
+          className="mb-6 flex items-start gap-3 rounded-2xl bg-coral-500/10 px-4 py-3 text-sm font-medium text-coral-ink"
         >
           <AlertCircle size={18} className="mt-0.5 shrink-0" />
           <span>{submitError}</span>

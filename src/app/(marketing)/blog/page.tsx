@@ -66,14 +66,14 @@ export default function BlogPage() {
                     </span>
                   </div>
 
-                  <h2 className="mt-4 text-2xl font-bold transition-colors group-hover:text-coral-500">
+                  <h2 className="mt-4 text-2xl font-bold transition-colors group-hover:text-coral-ink">
                     {post.frontmatter.title}
                   </h2>
                   <p className="mt-2 max-w-2xl leading-relaxed text-muted">
                     {post.frontmatter.description}
                   </p>
 
-                  <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-navy-800 transition-colors group-hover:text-coral-500">
+                  <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-navy-800 transition-colors group-hover:text-coral-ink">
                     Read article <ArrowRight size={15} />
                   </span>
                 </Card>

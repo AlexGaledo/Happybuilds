@@ -52,7 +52,7 @@ export function Hero() {
       <Container className="grid items-center gap-12 py-20 sm:py-28 lg:grid-cols-12 lg:gap-8">
         <div className="lg:col-span-7">
           <div className="hero-sub mb-5 inline-flex items-center gap-2 rounded-full border border-border bg-surface/70 px-4 py-1.5 text-sm font-semibold text-navy-700 backdrop-blur">
-            <Sparkles size={15} className="text-coral-500" />
+            <Sparkles size={15} className="text-coral-ink" />
             Digital & technical solutions, built happily
           </div>
 
@@ -63,7 +63,7 @@ export function Hero() {
             <span className="block overflow-hidden">
               <span className="hero-line block">
                 work feel{" "}
-                <span className="relative inline-block text-coral-500">
+                <span className="relative inline-block text-coral-ink">
                   lighter
                   <BrushUnderline />
                 </span>
@@ -104,7 +104,7 @@ export function Hero() {
             {/* Wordmark is live text, not baked into the art — so a rename is a
                 one-line edit here instead of re-cutting the PNGs. */}
             <p className="mt-5 text-center font-display text-3xl font-extrabold tracking-tight text-navy-800 sm:text-4xl">
-              fickles<span className="text-coral-500">.tech</span>
+              fickles<span className="text-coral-ink">.tech</span>
             </p>
           </div>
         </div>

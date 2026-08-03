@@ -45,7 +45,7 @@ export function Logo({
             theme === "dark" ? "text-white" : "text-navy-800",
           )}
         >
-          fickles<span className="text-coral-500">.tech</span>
+          fickles<span className={theme === "dark" ? "text-coral-400" : "text-coral-ink"}>.tech</span>
         </span>
       </Link>
     );
@@ -86,7 +86,7 @@ export function Logo({
           theme === "dark" ? "text-white" : "text-navy-800",
         )}
       >
-        fickles<span className="text-coral-500">.tech</span>
+        fickles<span className={theme === "dark" ? "text-coral-400" : "text-coral-ink"}>.tech</span>
       </span>
     </Link>
   );

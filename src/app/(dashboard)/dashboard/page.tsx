@@ -58,7 +58,7 @@ export default async function OverviewPage() {
         action={
           <Link
             href="/dashboard/leads"
-            className="inline-flex min-h-11 items-center gap-2 rounded-full bg-coral-500 px-4 py-2 text-sm font-semibold text-white shadow-soft transition-colors duration-200 hover:bg-coral-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="inline-flex min-h-11 items-center gap-2 rounded-full bg-coral-600 px-4 py-2 text-sm font-semibold text-white shadow-soft transition-colors duration-200 hover:bg-coral-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             Browse leads
             <ArrowUpRight aria-hidden className="size-4" />
@@ -143,7 +143,7 @@ export default async function OverviewPage() {
               action={
                 <Link
                   href="/dashboard/leads"
-                  className="rounded-full px-3 py-1.5 text-sm font-semibold text-coral-600 transition-colors hover:bg-coral-500/8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500"
+                  className="rounded-full px-3 py-1.5 text-sm font-semibold text-coral-ink transition-colors hover:bg-coral-500/8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500"
                 >
                   View all
                 </Link>
@@ -166,7 +166,7 @@ export default async function OverviewPage() {
                       className="group flex flex-col gap-1.5 px-5 py-3.5 transition-colors hover:bg-navy-800/[0.03] focus-visible:outline-none focus-visible:bg-navy-800/[0.03] dark:hover:bg-white/5"
                     >
                       <span className="flex items-baseline justify-between gap-3">
-                        <span className="truncate text-sm font-semibold group-hover:text-coral-600">
+                        <span className="truncate text-sm font-semibold group-hover:text-coral-ink">
                           {listing.title}
                         </span>
                         <time
@@ -221,7 +221,7 @@ export default async function OverviewPage() {
               as a bug. */}
           <Panel className="border-amber-500/30 bg-amber-500/[0.06]">
             <div className="flex gap-3 px-5 py-4">
-              <Info aria-hidden className="mt-0.5 size-4 shrink-0 text-amber-600" />
+              <Info aria-hidden className="mt-0.5 size-4 shrink-0 text-amber-ink" />
               <div className="text-xs leading-relaxed text-muted">
                 <p className="font-semibold text-foreground">
                   Client and email are empty by design

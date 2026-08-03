@@ -29,7 +29,7 @@ export default function HomePage() {
         <RevealGroup className="grid grid-cols-2 gap-6 lg:grid-cols-4">
           {stats.map((s) => (
             <Reveal key={s.label} className="text-center">
-              <p className="font-display text-3xl font-extrabold text-coral-500 sm:text-4xl">
+              <p className="font-display text-3xl font-extrabold text-coral-ink sm:text-4xl">
                 {s.value}
               </p>
               <p className="mt-1 text-sm text-muted">{s.label}</p>
@@ -49,11 +49,11 @@ export default function HomePage() {
           {services.map((service) => (
             <Reveal key={service.slug}>
               <Card interactive className="flex h-full flex-col">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-coral-500/10 text-coral-600">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-coral-500/10 text-coral-ink">
                   <ServiceIcon name={service.icon} className="h-6 w-6" />
                 </div>
                 <h3 className="mt-5 text-xl font-bold">{service.title}</h3>
-                <p className="mt-1 text-sm font-semibold text-coral-500">
+                <p className="mt-1 text-sm font-semibold text-coral-ink">
                   {service.tagline}
                 </p>
                 <p className="mt-3 flex-1 leading-relaxed text-muted">
@@ -61,7 +61,7 @@ export default function HomePage() {
                 </p>
                 <Link
                   href={`/services#${service.slug}`}
-                  className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-navy-800 transition-colors hover:text-coral-500"
+                  className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-navy-800 transition-colors hover:text-coral-ink"
                 >
                   Learn more <ArrowRight size={15} />
                 </Link>
@@ -123,7 +123,7 @@ export default function HomePage() {
                     <Badge tone={cs.accent}>{cs.category}</Badge>
                     <span className="text-sm text-muted">{cs.year}</span>
                   </div>
-                  <h3 className="mt-4 text-2xl font-bold transition-colors group-hover:text-coral-500">
+                  <h3 className="mt-4 text-2xl font-bold transition-colors group-hover:text-coral-ink">
                     {cs.title}
                   </h3>
                   <p className="mt-2 leading-relaxed text-muted">{cs.summary}</p>
@@ -159,7 +159,7 @@ export default function HomePage() {
               {["Fixed, fair pricing", "Weekly visible progress", "Post-launch support"].map(
                 (item) => (
                   <li key={item} className="flex items-center gap-2 font-semibold">
-                    <Check size={18} className="text-mint-500" /> {item}
+                    <Check size={18} className="text-mint-ink" /> {item}
                   </li>
                 ),
               )}

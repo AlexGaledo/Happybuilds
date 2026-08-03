@@ -227,7 +227,7 @@ export function LeadFilters({
           className={cn(
             "inline-flex min-h-11 cursor-pointer select-none items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-colors",
             params.get("has_email") === "true"
-              ? "border-coral-500 bg-coral-500/10 text-coral-600"
+              ? "border-coral-500 bg-coral-500/10 text-coral-ink"
               : "border-border bg-surface text-foreground hover:border-navy-300",
           )}
         >
@@ -246,7 +246,7 @@ export function LeadFilters({
             type="button"
             data-testid="filter-clear"
             onClick={clearAll}
-            className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold text-coral-600 transition-colors hover:bg-coral-500/8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500"
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold text-coral-ink transition-colors hover:bg-coral-500/8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500"
           >
             <X aria-hidden className="size-4" />
             Clear {activeCount}

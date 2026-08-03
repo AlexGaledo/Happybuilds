@@ -25,7 +25,7 @@ export default function ContactPage() {
       <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
         {/* Left: friendly intro + ways to reach us */}
         <div>
-          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-coral-500">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-coral-ink">
             Contact
           </p>
           <h1 className="text-3xl font-bold sm:text-4xl">
@@ -38,14 +38,14 @@ export default function ContactPage() {
 
           <div className="mt-10 space-y-6">
             <div className="flex items-start gap-4">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-coral-500/10 text-coral-600">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-coral-500/10 text-coral-ink">
                 <Mail size={20} />
               </span>
               <div>
                 <p className="font-semibold">Email us</p>
                 <a
                   href={`mailto:${site.email}`}
-                  className="text-muted transition-colors hover:text-coral-500"
+                  className="text-muted transition-colors hover:text-coral-ink"
                 >
                   {site.email}
                 </a>
@@ -53,7 +53,7 @@ export default function ContactPage() {
             </div>
 
             <div className="flex items-start gap-4">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-500">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-ink">
                 <Clock size={20} />
               </span>
               <div>
@@ -65,7 +65,7 @@ export default function ContactPage() {
             </div>
 
             <div className="flex items-start gap-4">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-mint-500/12 text-mint-500">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-mint-500/12 text-mint-ink">
                 <MessageSquareHeart size={20} />
               </span>
               <div>

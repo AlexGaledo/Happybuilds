@@ -40,7 +40,7 @@ export function LockedFeature({
           data-testid="locked-notice"
           className="w-full max-w-md rounded-2xl border border-border bg-surface p-6 text-center shadow-lift"
         >
-          <span className="mx-auto grid size-11 place-items-center rounded-2xl bg-amber-500/15 text-amber-600">
+          <span className="mx-auto grid size-11 place-items-center rounded-2xl bg-amber-500/15 text-amber-ink">
             <Lock aria-hidden className="size-5" />
           </span>
           <h2 className="mt-4 font-display text-lg font-bold">{title}</h2>

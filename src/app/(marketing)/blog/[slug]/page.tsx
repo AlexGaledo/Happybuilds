@@ -77,7 +77,7 @@ const mdxComponents = {
   ),
   li: (props: ComponentPropsWithoutRef<"li">) => (
     <li
-      className="text-lg leading-relaxed text-muted marker:text-coral-500"
+      className="text-lg leading-relaxed text-muted marker:text-coral-ink"
       {...props}
     />
   ),
@@ -89,7 +89,7 @@ const mdxComponents = {
   ),
   a: (props: ComponentPropsWithoutRef<"a">) => (
     <a
-      className="font-semibold text-coral-500 underline underline-offset-4 transition-colors hover:text-coral-600"
+      className="font-semibold text-coral-ink underline underline-offset-4 transition-colors hover:text-coral-ink"
       {...props}
     />
   ),
@@ -120,7 +120,7 @@ export default async function BlogPostPage({ params }: PageProps) {
         <Reveal className="mx-auto max-w-3xl">
           <Link
             href="/blog"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted transition-colors hover:text-coral-500"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted transition-colors hover:text-coral-ink"
           >
             <ArrowLeft size={15} /> All articles
           </Link>
@@ -162,7 +162,7 @@ export default async function BlogPostPage({ params }: PageProps) {
         <div className="mx-auto mt-14 max-w-3xl">
           <Link
             href="/blog"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-navy-800 transition-colors hover:text-coral-500"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-navy-800 transition-colors hover:text-coral-ink"
           >
             <ArrowLeft size={15} /> Back to all articles
           </Link>

@@ -1,6 +1,22 @@
 @import "tailwindcss";
 
 /*
+  Dark-mode strategy. THIS MUST STAY IN STEP WITH THE `.dark` BLOCK BELOW.
+
+  Tailwind v4's `dark:` variant defaults to the `prefers-color-scheme: dark`
+  media query, but our dark tokens are defined on a `.dark` class that nothing
+  ever sets. The two halves therefore fired independently: on any device set to
+  dark mode the `dark:` utilities applied (`dark:text-navy-50` — near white)
+  while the surfaces stayed light, producing near-white text on a near-white
+  background. The lead table's Type column was the clearest casualty.
+
+  Binding the variant to the class makes the two halves inseparable: `dark:`
+  utilities cannot apply unless the tokens that pair with them have applied too.
+  Until a theme toggle exists, that means the app is honestly light-only.
+*/
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
   Fickles design tokens.
   Brand: navy #0A1930 (from logo), warm off-white #FDFCF7, playful coral + amber.
   Friendly (rounded, warm) + professional (calm navy, clean grid).
@@ -21,13 +37,22 @@
 
   --color-cream: #fdfcf7; /* logo off-white background */
 
-  /* Accents */
+  /* Accents.
+     The vivid steps are FILL colours. Measured against the cream surface they
+     are far too light to be text — coral-500 is 2.99:1, mint-500 is 2.55:1,
+     amber-500 is 1.77:1 — so each has a darker `-ink` partner that clears WCAG
+     AA (4.5:1) at any size. Rule: vivid for fills and large display numerals,
+     `-ink` the moment the colour becomes small text. */
   --color-coral-400: #ff836a;
-  --color-coral-500: #ff5c39; /* primary CTA */
-  --color-coral-600: #ed4321;
+  --color-coral-500: #ff5c39; /* primary CTA fill */
+  --color-coral-600: #d93d17; /* 4.54:1 under white — the lightest coral a
+                                 white-on-coral button may use */
+  --color-coral-ink: #cf3813; /* 4.84:1 on cream — coral as text */
   --color-amber-400: #ffc861;
-  --color-amber-500: #f5b544; /* secondary highlight */
-  --color-mint-500: #2bb39a; /* tertiary, success */
+  --color-amber-500: #f5b544; /* secondary highlight fill */
+  --color-amber-ink: #8a5a00; /* 5.32:1 on cream — amber as text */
+  --color-mint-500: #2bb39a; /* tertiary, success fill */
+  --color-mint-ink: #1b7a68; /* 5.07:1 on cream — mint as text */
 
   /* Semantic tokens (light theme defaults) */
   --color-background: var(--color-cream);
@@ -55,8 +80,19 @@
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/*
+  Declare the scheme so the browser stops guessing. Without this, a device in
+  dark mode renders native controls — <select> menus, checkboxes, scrollbars —
+  with dark chrome against our light surfaces, and Chrome's auto-darkening is
+  free to invert the page.
+*/
+:root {
+  color-scheme: light;
+}
+
 /* Dark theme (class-based; toggled via <html class="dark">) */
 .dark {
+  color-scheme: dark;
   --color-background: var(--color-navy-900);
   --color-surface: var(--color-navy-800);
   --color-foreground: #f4f6fb;

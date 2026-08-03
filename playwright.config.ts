@@ -48,7 +48,12 @@ export default defineConfig({
     // navigation to each route slow enough to look like a broken page.
     command: `pnpm start -p ${PORT}`,
     url: BASE_URL,
-    reuseExistingServer: !process.env.CI,
+    // Never reuse. A server left running across runs serves the build it
+    // started with — which silently tested stale code twice — and one that had
+    // been up for many runs degraded from ~0.1s to ~2.0s per render, turning
+    // navigation assertions into flakes. A fresh start costs ~2s and removes
+    // both failure modes.
+    reuseExistingServer: false,
     timeout: 120_000,
     env: { API_INTERNAL_URL: API_BASE },
   },

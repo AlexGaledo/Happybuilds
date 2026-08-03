@@ -42,13 +42,13 @@ export default function ServicesPage() {
                 <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
                   {/* Text column */}
                   <div className={visualOnRight ? "lg:order-1" : "lg:order-2"}>
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-coral-500/10 text-coral-600">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-coral-500/10 text-coral-ink">
                       <ServiceIcon name={service.icon} className="h-7 w-7" />
                     </div>
                     <h2 className="mt-6 text-2xl font-bold sm:text-3xl">
                       {service.title}
                     </h2>
-                    <p className="mt-2 text-base font-semibold text-coral-500">
+                    <p className="mt-2 text-base font-semibold text-coral-ink">
                       {service.tagline}
                     </p>
                     <p className="mt-4 text-lg leading-relaxed text-muted">
@@ -68,7 +68,7 @@ export default function ServicesPage() {
                       <ul className="mt-5 grid gap-4">
                         {service.features.map((feature) => (
                           <li key={feature} className="flex items-start gap-3">
-                            <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-mint-500/12 text-mint-500">
+                            <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-mint-500/12 text-mint-ink">
                               <Check size={15} />
                             </span>
                             <span className="leading-relaxed">{feature}</span>

@@ -115,7 +115,7 @@ export function ScrapeControl({ initial }: { initial: ScrapeStatus | null }) {
       </dl>
 
       {failed && last?.error && (
-        <p className="rounded-xl bg-coral-500/8 px-3 py-2 text-xs leading-relaxed text-coral-600">
+        <p className="rounded-xl bg-coral-500/8 px-3 py-2 text-xs leading-relaxed text-coral-ink">
           {last.error}
         </p>
       )}
@@ -152,9 +152,9 @@ export function ScrapeControl({ initial }: { initial: ScrapeStatus | null }) {
         aria-live="polite"
         className={cn(
           "text-xs leading-relaxed",
-          feedback?.tone === "error" && "text-coral-600",
-          feedback?.tone === "busy" && "text-amber-600",
-          feedback?.tone === "ok" && "text-mint-500",
+          feedback?.tone === "error" && "text-coral-ink",
+          feedback?.tone === "busy" && "text-amber-ink",
+          feedback?.tone === "ok" && "text-mint-ink",
         )}
       >
         {feedback?.message ?? ""}

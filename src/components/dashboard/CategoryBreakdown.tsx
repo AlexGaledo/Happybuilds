@@ -43,7 +43,7 @@ export function CategoryBreakdown({
               className="group block rounded-xl px-1 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500"
             >
               <span className="flex items-baseline justify-between gap-3 text-sm">
-                <span className="truncate font-medium group-hover:text-coral-600">
+                <span className="truncate font-medium group-hover:text-coral-ink">
                   {humanise(facet.value)}
                 </span>
                 <span className="shrink-0 tabular-nums text-muted">

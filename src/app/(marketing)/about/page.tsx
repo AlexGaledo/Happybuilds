@@ -29,19 +29,19 @@ const team = [
     name: "Sam Rivera",
     role: "Founder & Lead Engineer",
     bio: "Turns gnarly manual workflows into things that quietly run themselves.",
-    accent: "bg-coral-500/12 text-coral-600",
+    accent: "bg-coral-500/12 text-coral-ink",
   },
   {
     name: "Jordan Park",
     role: "Product & Design",
     bio: "Obsessed with interfaces that feel obvious on the very first click.",
-    accent: "bg-amber-500/15 text-amber-500",
+    accent: "bg-amber-500/15 text-amber-ink",
   },
   {
     name: "Riley Chen",
     role: "Full-stack Engineer",
     bio: "Loves a clean API and a deploy that just works on the first try.",
-    accent: "bg-mint-500/12 text-mint-500",
+    accent: "bg-mint-500/12 text-mint-ink",
   },
 ];
 
@@ -146,7 +146,7 @@ export default function AboutPage() {
                   {getInitials(member.name)}
                 </div>
                 <h3 className="mt-5 text-xl font-bold">{member.name}</h3>
-                <p className="mt-1 text-sm font-semibold text-coral-500">
+                <p className="mt-1 text-sm font-semibold text-coral-ink">
                   {member.role}
                 </p>
                 <p className="mt-3 leading-relaxed text-muted">{member.bio}</p>

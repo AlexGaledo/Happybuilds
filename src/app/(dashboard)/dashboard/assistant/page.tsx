@@ -83,7 +83,7 @@ export default function AssistantPage() {
                   {message.text}
                 </p>
                 {message.role === "user" && (
-                  <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-coral-500/12 text-coral-600">
+                  <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-coral-500/12 text-coral-ink">
                     <User aria-hidden className="size-4" />
                   </span>
                 )}

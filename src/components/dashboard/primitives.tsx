@@ -121,7 +121,7 @@ export function ErrorState({
       role="alert"
       className="flex flex-col items-center gap-3 px-6 py-12 text-center"
     >
-      <span className="grid size-12 place-items-center rounded-2xl bg-coral-500/10 text-coral-600">
+      <span className="grid size-12 place-items-center rounded-2xl bg-coral-500/10 text-coral-ink">
         <AlertTriangle aria-hidden className="size-5" />
       </span>
       <div>
@@ -153,9 +153,9 @@ export function Chip({
 }) {
   const tones = {
     neutral: "bg-navy-800/6 text-navy-700 dark:bg-white/10 dark:text-navy-50",
-    coral: "bg-coral-500/12 text-coral-600",
-    amber: "bg-amber-500/18 text-amber-600",
-    mint: "bg-mint-500/14 text-mint-500",
+    coral: "bg-coral-500/12 text-coral-ink",
+    amber: "bg-amber-500/18 text-amber-ink",
+    mint: "bg-mint-500/14 text-mint-ink",
     muted: "bg-navy-800/4 text-muted dark:bg-white/5",
   } as const;
 

@@ -10,7 +10,10 @@ const base =
 
 const variants: Record<Variant, string> = {
   primary:
-    "bg-coral-500 text-white shadow-soft hover:bg-coral-600 hover:shadow-lift hover:-translate-y-0.5 active:translate-y-0",
+    // coral-600, not coral-500: white on #ff5c39 is 3.07:1 and fails AA at
+    // button sizes. coral-600 is the lightest step that clears 4.5:1, so the
+    // CTA stays unmistakably coral.
+    "bg-coral-600 text-white shadow-soft hover:bg-coral-ink hover:shadow-lift hover:-translate-y-0.5 active:translate-y-0",
   secondary:
     "bg-navy-800 text-white hover:bg-navy-700 hover:-translate-y-0.5 active:translate-y-0",
   outline:

@@ -16,7 +16,7 @@ export function Testimonials() {
         {testimonials.map((t) => (
           <Reveal key={t.name}>
             <Card className="flex h-full flex-col">
-              <Quote className="h-8 w-8 text-coral-500/40" />
+              <Quote className="h-8 w-8 text-coral-ink/40" />
               <p className="mt-4 flex-1 text-lg leading-relaxed text-foreground">
                 {t.quote}
               </p>
