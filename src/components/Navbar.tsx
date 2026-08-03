@@ -14,7 +14,11 @@ import { cn } from "@/lib/utils";
 export function Navbar() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
-  const [open, setOpen] = useState(false);
+  // The menu records the route it was opened on, so a navigation closes it by
+  // derivation rather than by an effect that syncs state to the router.
+  const [openedOn, setOpenedOn] = useState<string | null>(null);
+  const open = openedOn !== null && openedOn === pathname;
+  const setOpen = (next: boolean) => setOpenedOn(next ? pathname : null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 16);
@@ -22,9 +26,6 @@ export function Navbar() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  // Close the mobile menu on route change.
-  useEffect(() => setOpen(false), [pathname]);
 
   return (
     <header className="sticky top-0 z-50">
@@ -77,7 +78,7 @@ export function Navbar() {
 
           <button
             type="button"
-            onClick={() => setOpen((v) => !v)}
+            onClick={() => setOpen(!open)}
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
             className="rounded-full p-2 text-navy-800 hover:bg-navy-800/5 md:hidden"

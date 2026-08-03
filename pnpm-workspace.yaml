@@ -1,3 +1,9 @@
+# This project is a single package, not a monorepo. The file exists only to
+# hold `allowBuilds`, but pnpm treats its presence as a workspace root — so the
+# root has to be listed as a package or `pnpm add` fails to find a manifest.
+packages:
+  - "."
+
 allowBuilds:
   sharp: true
   unrs-resolver: true

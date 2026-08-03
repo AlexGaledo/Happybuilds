@@ -2,10 +2,6 @@ import type { Metadata } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { site } from "@/lib/site";
-import { SmoothScroll } from "@/components/providers/SmoothScroll";
-import { MotionProvider } from "@/components/providers/MotionProvider";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -53,6 +49,13 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * Root layout owns only the document shell: fonts, base colours, metadata.
+ *
+ * Chrome lives in the route groups — `(marketing)` adds the public navbar,
+ * footer and Lenis smooth scrolling; `(dashboard)` adds the app sidebar and
+ * deliberately skips smooth scroll, which fights with a sticky table header.
+ */
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -61,14 +64,8 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${jakarta.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-background text-foreground">
-        <MotionProvider>
-          <SmoothScroll>
-            <Navbar />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </SmoothScroll>
-        </MotionProvider>
+      <body className="min-h-full bg-background text-foreground">
+        {children}
       </body>
     </html>
   );

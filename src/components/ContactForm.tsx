@@ -102,7 +102,7 @@ export function ContactForm() {
         </div>
         <h2 className="mt-6 text-2xl font-bold">Message sent — thank you!</h2>
         <p className="mt-3 leading-relaxed text-muted">
-          We've got your note and we'll reply within one business day with honest
+          We&rsquo;ve got your note and we&rsquo;ll reply within one business day with honest
           next steps. Talk soon!
         </p>
       </Card>
