@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Fickles — website + lead dashboard
 
-## Getting Started
+Next.js 16 (App Router, Turbopack), React 19, Tailwind v4. Two surfaces in one
+app, split by route group:
 
-First, run the development server:
+- `src/app/(marketing)` — the public site. Navbar, footer, Lenis smooth scroll.
+- `src/app/(dashboard)` — the internal lead console at `/dashboard`. Its own
+  chrome, and deliberately no smooth scrolling: it fights the sticky table
+  header and adds latency to a screen that should feel instant.
+
+The root layout holds only the document shell (fonts, metadata, base colours),
+which is what lets the two groups differ.
+
+## Running it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
+pnpm dev            # http://localhost:3000
+pnpm build && pnpm start
+pnpm lint
+pnpm test:e2e       # Playwright, see below
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Copy `.env.example` to `.env.local`:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Variable | Who reads it |
+|---|---|
+| `NEXT_PUBLIC_API_BASE_URL` | the browser — public contact form only |
+| `API_INTERNAL_URL` | the **server** — every dashboard read |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`API_INTERNAL_URL` must not be `NEXT_PUBLIC_*`; that would ship the internal
+address in the client bundle. On the VPS the lead API binds to loopback, so the
+Next server reaches it directly — no public `api.` hostname and no CORS. Locally,
+tunnel it:
 
-## Learn More
+```bash
+ssh -N -L 8000:127.0.0.1:8000 crm-agency
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Dashboard design notes
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Filter state lives in the URL.** `src/lib/dashboard/filters.ts` is the only
+place the query string is parsed and re-serialised, and it clamps out-of-range
+values rather than forwarding them for the API to reject. Because state is in
+the URL, the table can be a server component, every view is shareable, and back
+/ reload restore exactly what you were looking at.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Links in repeated rows set `prefetch={false}`.** `/dashboard/leads` is
+`force-dynamic`, so each prefetch is a full server render plus two API calls.
+With a link per row, Next queued ~50 of them on load and the navigation the user
+actually asked for sat behind the lot.
 
-## Deploy on Vercel
+**Below `md` the table becomes cards.** The table needs ~44rem before columns
+collide; on a phone it would be a horizontal scroller showing one truncated
+column. Cards use a different `data-testid` so the two never double-count.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**`client` and `email` are permanently empty.** onlinejobs.ph hides employer
+identity and contact details from anonymous visitors — see
+`../fickles-automated-lead/docs/scraping-notes.md`. The UI says so rather than
+leaving cells mysteriously blank.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Outreach and the AI assistant are locked.** Their previews are `aria-hidden`,
+`inert` and `pointer-events-none`, so nothing behind the veil is clickable,
+focusable, or reachable by a screen reader — a blur alone would leave a keyboard
+user tabbing through dead controls.
+
+## End-to-end tests
+
+`e2e/` runs Playwright against a real production build talking to a **real lead
+API** — no mocked routes, no fixtures. Each assertion compares the rendered page
+against a direct call to the same endpoint, so a filter that silently fails to
+reach the backend fails the test instead of quietly returning everything. A
+suite built on stubs would keep passing after the API contract changed.
+
+```bash
+ssh -N -L 8000:127.0.0.1:8000 crm-agency     # in another terminal
+pnpm test:e2e
+pnpm test:e2e -- --grep-invert "@screenshot" # skip the reference captures
+```
+
+The suite is read-only. Nothing in it triggers a scrape or mutates a row.
