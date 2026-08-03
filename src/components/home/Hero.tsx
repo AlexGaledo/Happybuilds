@@ -94,13 +94,18 @@ export function Hero() {
         <div className="lg:col-span-5">
           <div className="hero-art relative mx-auto max-w-sm">
             <Image
-              src="/brand/fickles-navy.png"
+              src="/brand/fickles-mark-navy.png"
               alt="The Fickles paintbrush mascot"
-              width={1264}
-              height={1264}
+              width={1049}
+              height={517}
               priority
               className="h-auto w-full drop-shadow-[0_24px_48px_rgba(10,25,48,0.18)]"
             />
+            {/* Wordmark is live text, not baked into the art — so a rename is a
+                one-line edit here instead of re-cutting the PNGs. */}
+            <p className="mt-5 text-center font-display text-3xl font-extrabold tracking-tight text-navy-800 sm:text-4xl">
+              fickles<span className="text-coral-500">.tech</span>
+            </p>
           </div>
         </div>
       </Container>

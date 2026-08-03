@@ -24,19 +24,29 @@ export function Logo({
   const markSrc =
     theme === "dark" ? "/brand/icon-white-512.png" : "/brand/icon-512.png";
   const fullSrc =
-    theme === "dark" ? "/brand/fickles-white.png" : "/brand/fickles-navy.png";
+    theme === "dark"
+      ? "/brand/fickles-mark-white.png"
+      : "/brand/fickles-mark-navy.png";
 
   if (variant === "full") {
     return (
       <Link href="/" aria-label="Fickles home" className={cn("inline-block", className)}>
         <Image
           src={fullSrc}
-          alt="Fickles"
-          width={1264}
-          height={1264}
+          alt=""
+          width={1049}
+          height={517}
           priority={priority}
           className="h-auto w-full"
         />
+        <span
+          className={cn(
+            "mt-3 block text-center font-display text-2xl font-extrabold tracking-tight",
+            theme === "dark" ? "text-white" : "text-navy-800",
+          )}
+        >
+          fickles<span className="text-coral-500">.tech</span>
+        </span>
       </Link>
     );
   }
