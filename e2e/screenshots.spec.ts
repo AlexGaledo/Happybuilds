@@ -37,6 +37,22 @@ test.describe("@screenshot", () => {
     await waitForTable(page);
     await page.screenshot({ path: `${DIR}/03-leads-detail.png`, fullPage: true });
 
+    await page.goto("/dashboard/pipeline");
+    await expect(page.getByRole("heading", { name: "Pipeline" })).toBeVisible();
+    await page.screenshot({ path: `${DIR}/09-pipeline.png`, fullPage: true });
+
+    await page.goto("/dashboard/drafts");
+    await expect(page.getByRole("heading", { name: "Drafts" })).toBeVisible();
+    await page.screenshot({ path: `${DIR}/10-drafts.png`, fullPage: true });
+
+    await page.goto("/dashboard/templates");
+    await expect(page.getByRole("heading", { name: "Message templates" })).toBeVisible();
+    await page.screenshot({ path: `${DIR}/11-templates.png`, fullPage: true });
+
+    await page.goto("/dashboard/configuration");
+    await expect(page.getByRole("heading", { name: "Configuration" })).toBeVisible();
+    await page.screenshot({ path: `${DIR}/12-configuration.png`, fullPage: true });
+
     await page.goto("/dashboard/outreach");
     await expect(page.getByTestId("locked-notice")).toBeVisible();
     await page.screenshot({ path: `${DIR}/04-outreach-locked.png`, fullPage: true });
@@ -60,5 +76,23 @@ test.describe("@screenshot", () => {
     await page.getByRole("button", { name: "Open navigation" }).click();
     await expect(page.getByRole("dialog")).toBeVisible();
     await page.screenshot({ path: `${DIR}/08-nav-drawer-mobile.png` });
+    await page.keyboard.press("Escape");
+
+    // The surfaces the mobile work actually changed.
+    await page.goto("/dashboard/pipeline");
+    await expect(page.getByRole("heading", { name: "Pipeline" })).toBeVisible();
+    await page.screenshot({ path: `${DIR}/13-pipeline-mobile.png`, fullPage: true });
+
+    await page.goto("/dashboard/drafts");
+    await expect(page.getByRole("heading", { name: "Drafts" })).toBeVisible();
+    await page.screenshot({ path: `${DIR}/14-drafts-mobile.png`, fullPage: true });
+
+    await page.goto("/dashboard/templates");
+    await expect(page.getByRole("heading", { name: "Message templates" })).toBeVisible();
+    await page.screenshot({ path: `${DIR}/15-templates-mobile.png`, fullPage: true });
+
+    await page.goto("/dashboard/configuration");
+    await expect(page.getByRole("heading", { name: "Configuration" })).toBeVisible();
+    await page.screenshot({ path: `${DIR}/16-configuration-mobile.png`, fullPage: true });
   });
 });

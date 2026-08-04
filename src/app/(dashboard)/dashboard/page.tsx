@@ -143,7 +143,7 @@ export default async function OverviewPage() {
               action={
                 <Link
                   href="/dashboard/leads"
-                  className="rounded-full px-3 py-1.5 text-sm font-semibold text-coral-ink transition-colors hover:bg-coral-500/8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500"
+                  className="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold text-coral-ink transition-colors hover:bg-coral-500/8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500 pointer-fine:min-h-9"
                 >
                   View all
                 </Link>

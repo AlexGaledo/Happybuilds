@@ -166,7 +166,7 @@ function MobileCard({
           href={detailHref}
           scroll={false}
           prefetch={false}
-          className="min-w-0 flex-1 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500"
+          className="min-h-11 min-w-0 flex-1 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500 pointer-fine:min-h-0"
         >
           <span className="block text-sm font-semibold leading-snug">
             {listing.title}
@@ -228,7 +228,7 @@ function SortLink({
       prefetch={false}
       data-testid={`sort-${column}`}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-lg py-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500",
+        "inline-flex min-h-11 items-center gap-1.5 rounded-lg py-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500 pointer-fine:min-h-9",
         active ? "text-foreground" : "hover:text-foreground",
       )}
     >
@@ -277,7 +277,7 @@ function Row({
           scroll={false}
           prefetch={false}
           data-testid="lead-row-link"
-          className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500"
+          className="block min-h-11 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500 pointer-fine:min-h-0"
         >
           <span className="block truncate font-semibold text-foreground group-hover:text-coral-ink">
             {listing.title}
@@ -353,7 +353,7 @@ function Row({
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`Open "${listing.title}" on ${listing.source} in a new tab`}
-          className="inline-grid size-9 place-items-center rounded-lg text-muted transition-colors hover:bg-navy-800/6 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500 dark:hover:bg-white/10"
+          className="inline-grid size-11 place-items-center rounded-lg text-muted transition-colors hover:bg-navy-800/6 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500 dark:hover:bg-white/10 pointer-fine:size-9"
         >
           <ExternalLink aria-hidden className="size-4" />
         </a>

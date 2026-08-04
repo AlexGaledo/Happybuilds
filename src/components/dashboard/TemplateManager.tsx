@@ -303,7 +303,7 @@ function Editor({
             onChange={(e) => set("name", e.target.value)}
             maxLength={120}
             required
-            className="min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-coral-500"
+            className="min-h-11 w-full rounded-xl border border-border bg-background px-3 text-base outline-none focus-visible:ring-2 focus-visible:ring-coral-500 pointer-fine:text-sm"
           />
         </Field>
         <Field label="Subject" hint="Placeholders allowed, e.g. {{role_title}}.">
@@ -312,7 +312,7 @@ function Editor({
             onChange={(e) => set("subject", e.target.value)}
             maxLength={200}
             required
-            className="min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-coral-500"
+            className="min-h-11 w-full rounded-xl border border-border bg-background px-3 text-base outline-none focus-visible:ring-2 focus-visible:ring-coral-500 pointer-fine:text-sm"
           />
         </Field>
       </div>
@@ -328,7 +328,7 @@ function Editor({
             rows={2}
             maxLength={1000}
             placeholder="A scraped job post for repetitive manual work: data entry, order processing, report building…"
-            className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-coral-500"
+            className="w-full rounded-xl border border-border bg-background px-3 py-2 text-base leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-coral-500 pointer-fine:text-sm"
           />
         </Field>
       </div>
@@ -341,9 +341,9 @@ function Editor({
           <textarea
             value={values.body}
             onChange={(e) => set("body", e.target.value)}
-            rows={12}
+            rows={8}
             required
-            className="w-full rounded-xl border border-border bg-background px-3 py-2 font-mono text-xs leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-coral-500"
+            className="w-full rounded-xl border border-border bg-background px-3 py-2 font-mono text-base leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-coral-500 pointer-fine:text-xs"
           />
         </Field>
       </div>
@@ -354,10 +354,10 @@ function Editor({
             value={tagText}
             onChange={(e) => setTagText(e.target.value)}
             placeholder="listing, automation"
-            className="min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-coral-500"
+            className="min-h-11 w-full rounded-xl border border-border bg-background px-3 text-base outline-none focus-visible:ring-2 focus-visible:ring-coral-500 pointer-fine:text-sm"
           />
         </Field>
-        <label className="flex min-h-11 items-center gap-2 self-end text-sm">
+        <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm md:self-end">
           <input
             type="checkbox"
             checked={values.is_active}
@@ -405,7 +405,8 @@ function Action({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold transition-colors",
+        // See DraftsBoard.SmallButton — icon-only Delete needs the width too.
+        "inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-semibold transition-colors pointer-fine:min-h-9 pointer-fine:min-w-0 pointer-fine:px-2.5",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500",
         "disabled:cursor-not-allowed disabled:opacity-40",
         tone === "danger"

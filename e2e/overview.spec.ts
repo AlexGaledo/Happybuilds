@@ -83,7 +83,13 @@ test("top categories match /listings/facets and deep-link into the table", async
 
   await page.goto("/dashboard");
 
-  const link = page.getByRole("link", { name: new RegExp(escapeRe(top.value)) }).first();
+  // Scoped to the category panel: category names are ordinary words, so an
+  // unscoped link lookup also matches job titles in the Recent leads panel and
+  // navigates to ?selected= instead of ?category=.
+  const link = page
+    .getByTestId("category-breakdown")
+    .getByRole("link", { name: new RegExp(escapeRe(top.value)) })
+    .first();
   await expect(link).toBeVisible();
   await link.click();
 

@@ -297,8 +297,10 @@ function Row({
       </dt>
       <dd
         className={cn(
-          "mt-0.5 break-words font-semibold",
-          mono && "font-mono text-xs",
+          "mt-0.5 font-semibold",
+          // break-all, not break-words: paths and ids have no spaces to break
+          // on, so break-words leaves them overflowing the panel.
+          mono ? "break-all font-mono text-xs" : "break-words",
         )}
       >
         {value}

@@ -57,7 +57,7 @@ export function Pagination({
             prefetch={false}
             aria-current={limit === size ? "true" : undefined}
             className={cn(
-              "grid min-h-9 min-w-9 place-items-center rounded-lg px-2 text-xs font-semibold tabular-nums transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500",
+              "grid min-h-11 min-w-11 place-items-center rounded-lg px-2 text-xs font-semibold tabular-nums transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500 pointer-fine:min-h-9 pointer-fine:min-w-9",
               limit === size
                 ? "bg-navy-800 text-white"
                 : "text-muted hover:bg-navy-800/6 hover:text-foreground dark:hover:bg-white/10",

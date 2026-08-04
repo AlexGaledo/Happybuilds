@@ -32,7 +32,7 @@ export function CategoryBreakdown({
   const max = Math.max(...top.map((f) => f.count), 1);
 
   return (
-    <ul className="flex flex-col gap-3 px-5 py-4">
+    <ul data-testid="category-breakdown" className="flex flex-col gap-3 px-5 py-4">
       {top.map((facet) => {
         const share = percent(facet.count, total || max);
         return (
@@ -40,7 +40,7 @@ export function CategoryBreakdown({
             <Link
               href={`/dashboard/leads?category=${encodeURIComponent(facet.value)}`}
               prefetch={false}
-              className="group block rounded-xl px-1 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500"
+              className="group block min-h-11 rounded-xl px-1 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500 pointer-fine:py-1"
             >
               <span className="flex items-baseline justify-between gap-3 text-sm">
                 <span className="truncate font-medium group-hover:text-coral-ink">

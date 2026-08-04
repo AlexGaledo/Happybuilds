@@ -96,7 +96,7 @@ function Brand() {
   return (
     <Link
       href="/"
-      className="flex items-center gap-2.5 rounded-xl px-1 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-400"
+      className="flex min-h-11 items-center gap-2.5 rounded-xl px-1 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-400"
     >
       {/* data-brand-mark: the glyph is a logotype, which WCAG 1.4.3 exempts
           from the contrast minimum. Marked so the contrast audit can skip it
@@ -156,7 +156,7 @@ export function Sidebar() {
       {/* Desktop rail */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col gap-6 border-r border-white/5 bg-navy-900 px-4 py-6 lg:flex">
         <Brand />
-        <div className="relative flex-1">
+        <div className="relative min-h-0 flex-1 overflow-y-auto">
           <NavList />
         </div>
         <p className="rounded-xl bg-white/5 p-3 text-[11px] leading-relaxed text-navy-200/60">
@@ -209,7 +209,9 @@ export function Sidebar() {
                 <X aria-hidden className="size-5" />
               </button>
             </div>
-            <div className="relative flex-1">
+            {/* Scrolls: eight items do not fit a landscape phone, and the
+                last ones would otherwise be unreachable. */}
+            <div className="relative min-h-0 flex-1 overflow-y-auto">
               <NavList onNavigate={() => setOpen(false)} />
             </div>
           </div>

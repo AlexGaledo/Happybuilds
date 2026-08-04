@@ -81,6 +81,24 @@ action would revalidate the whole route tree on every tick.
 URL-driven and shareable; a selection is momentary and per-person. A shared link
 arriving with twelve rows pre-ticked next to a Send button is a trap.
 
+**Touch sizing keys off `pointer-fine:`, not `sm:`.** A landscape phone is
+812px wide, so any target sized by a width breakpoint silently reverts to
+desktop density on a device still being operated with a thumb — which is
+exactly what the first pass got wrong. Controls are 44px by default and only
+shrink where `(pointer: fine)` matches. Checkboxes stay 16px visually and get
+their target from a padded label with a negative margin, so the hit area costs
+no layout space.
+
+**Dense tables become cards below `md`.** Both the leads table and the pipeline
+queue need ~30–44rem before columns collide; on a phone that is a horizontal
+scroller showing one truncated column. The card list uses a different
+`data-testid` from the table so the two renderings never double-count.
+
+**`e2e/mobile.spec.ts` guards both.** It asserts no horizontal overflow and no
+sub-44px targets across every dashboard route, in portrait and landscape, and
+first asserts the emulated device actually reports a coarse pointer — without
+that check the suite would pass by applying the compact desktop sizing.
+
 **Outreach and the AI assistant are locked.** Their previews are `aria-hidden`,
 `inert` and `pointer-events-none`, so nothing behind the veil is clickable,
 focusable, or reachable by a screen reader — a blur alone would leave a keyboard

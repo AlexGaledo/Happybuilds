@@ -201,7 +201,7 @@ export function DraftsBoard({
           action={
             <div className="flex items-center gap-1.5">
               {sendableIds.length > 0 && (
-                <label className="flex cursor-pointer items-center gap-1.5 text-[11px] font-semibold text-muted">
+                <label className="flex min-h-11 cursor-pointer items-center gap-1.5 px-1 text-[11px] font-semibold text-muted">
                   <input
                     type="checkbox"
                     checked={allSelected}
@@ -356,13 +356,15 @@ function DraftCard({
     <article className={cn("px-4 py-3.5", sent && "opacity-60")} data-testid="draft-card">
       <div className="flex items-start gap-2.5">
         {selectable && !sent && (
-          <input
-            type="checkbox"
-            checked={selected}
-            onChange={onSelect}
-            aria-label={`Select "${draft.subject}"`}
-            className="mt-1 size-4 shrink-0 accent-coral-500"
-          />
+          <label className="-m-3 mt-0 inline-flex size-11 shrink-0 cursor-pointer items-start justify-center p-3">
+            <input
+              type="checkbox"
+              checked={selected}
+              onChange={onSelect}
+              aria-label={`Select "${draft.subject}"`}
+              className="mt-1 size-4 accent-coral-500"
+            />
+          </label>
         )}
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold">{draft.subject}</p>
@@ -420,7 +422,7 @@ function DraftCard({
             href={draft.source_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-coral-ink hover:bg-coral-500/8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500"
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold text-coral-ink hover:bg-coral-500/8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500 pointer-fine:min-h-9 pointer-fine:px-2.5"
           >
             <ExternalLink aria-hidden className="size-3.5" />
             Open post
@@ -471,7 +473,7 @@ function DraftCard({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@company.com"
-                className="min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-coral-500"
+                className="min-h-11 w-full rounded-xl border border-border bg-background px-3 text-base outline-none focus-visible:ring-2 focus-visible:ring-coral-500 pointer-fine:text-sm"
               />
             </Field>
           )}
@@ -480,7 +482,7 @@ function DraftCard({
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               maxLength={200}
-              className="min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-coral-500"
+              className="min-h-11 w-full rounded-xl border border-border bg-background px-3 text-base outline-none focus-visible:ring-2 focus-visible:ring-coral-500 pointer-fine:text-sm"
             />
           </Field>
           <Field label="Message">
@@ -488,7 +490,7 @@ function DraftCard({
               value={body}
               onChange={(e) => setBody(e.target.value)}
               rows={10}
-              className="w-full rounded-xl border border-border bg-background px-3 py-2 font-mono text-xs leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-coral-500"
+              className="w-full rounded-xl border border-border bg-background px-3 py-2 font-mono text-base leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-coral-500 pointer-fine:text-xs"
             />
           </Field>
           <div className="flex items-center gap-2">
@@ -572,7 +574,7 @@ function ReplyCard({
           href={`mailto:${reply.from_email}?subject=${encodeURIComponent(
             reply.subject?.startsWith("Re:") ? reply.subject : `Re: ${reply.subject ?? ""}`,
           )}`}
-          className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-coral-ink hover:bg-coral-500/8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500"
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold text-coral-ink hover:bg-coral-500/8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500 pointer-fine:min-h-9 pointer-fine:px-2.5"
         >
           Reply
         </a>
@@ -628,9 +630,11 @@ function Column({
         <Chip tone={tone}>{count}</Chip>
         {action}
       </header>
-      {/* Capped height with its own scroll: three columns of unbounded lists
-          would make the page as tall as the longest one. */}
-      <div className="max-h-[38rem] min-w-0 flex-1 overflow-y-auto">{children}</div>
+      {/* Capped height only once the columns sit side by side — three
+          unbounded lists in a row would make the page as tall as the longest.
+          Stacked on a phone they scroll with the page instead: a scroll region
+          inside the page scroll is the thing that eats swipes. */}
+      <div className="min-w-0 flex-1 xl:max-h-[38rem] xl:overflow-y-auto">{children}</div>
     </section>
   );
 }
@@ -655,7 +659,7 @@ function ColumnButton({
       disabled={disabled}
       aria-busy={busy}
       className={cn(
-        "inline-flex min-h-9 items-center gap-1.5 rounded-full bg-navy-800 px-3 text-xs font-semibold text-white",
+        "inline-flex min-h-11 items-center gap-1.5 rounded-full bg-navy-800 px-3.5 text-xs font-semibold text-white pointer-fine:min-h-9 pointer-fine:px-3",
         "transition-colors hover:bg-navy-700",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface",
         "disabled:cursor-not-allowed disabled:opacity-45",
@@ -697,7 +701,10 @@ function SmallButton({
       disabled={disabled}
       title={title}
       className={cn(
-        "inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold transition-colors",
+        // min-w-11 as well as min-h-11: an icon-only variant (Delete) is only
+        // ~38px wide otherwise, which passes the height check and still misses
+        // the 44px target.
+        "inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-semibold transition-colors pointer-fine:min-h-9 pointer-fine:min-w-0 pointer-fine:px-2.5",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500",
         "disabled:cursor-not-allowed disabled:opacity-40",
         tones[tone],
