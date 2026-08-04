@@ -104,11 +104,6 @@ that check the suite would pass by applying the compact desktop sizing.
 focusable, or reachable by a screen reader — a blur alone would leave a keyboard
 user tabbing through dead controls.
 
-**Outreach and the AI assistant are locked.** Their previews are `aria-hidden`,
-`inert` and `pointer-events-none`, so nothing behind the veil is clickable,
-focusable, or reachable by a screen reader — a blur alone would leave a keyboard
-user tabbing through dead controls.
-
 ## End-to-end tests
 
 `e2e/` runs Playwright against a real production build talking to a **real lead
