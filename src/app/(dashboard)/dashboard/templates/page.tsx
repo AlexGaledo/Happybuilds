@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getTemplates, safe } from "@/lib/dashboard/server";
+import { getConfig, getInstruction, getTemplates, safe } from "@/lib/dashboard/server";
 import { TemplateManager } from "@/components/dashboard/TemplateManager";
 import { ErrorState, PageHeader } from "@/components/dashboard/primitives";
 
@@ -14,7 +14,14 @@ export const dynamic = "force-dynamic";
  * template here is how you teach it a new angle.
  */
 export default async function TemplatesPage() {
-  const templates = await safe(getTemplates());
+  // The instruction and agent status only decorate the Generate panel, so both
+  // are read through `safe` and a failure degrades that panel rather than
+  // taking down a page whose actual job is listing templates.
+  const [templates, instruction, config] = await Promise.all([
+    safe(getTemplates()),
+    safe(getInstruction()),
+    safe(getConfig()),
+  ]);
 
   if (templates.error) {
     return (
@@ -35,7 +42,13 @@ export default async function TemplatesPage() {
         title="Message templates"
         description="The pool the drafting agent chooses from. It picks one template per lead using its “when to use”, then fills the placeholders from that lead's own details."
       />
-      <TemplateManager templates={templates.data?.items ?? []} />
+      <TemplateManager
+        templates={templates.data?.items ?? []}
+        hasInstruction={Boolean(instruction.data?.instruction?.trim())}
+        agentAvailable={
+          config.data?.checks.find((c) => c.key === "agent")?.ok ?? true
+        }
+      />
     </>
   );
 }

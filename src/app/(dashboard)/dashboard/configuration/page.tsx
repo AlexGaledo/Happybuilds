@@ -9,8 +9,13 @@ import {
   Terminal,
   TriangleAlert,
 } from "lucide-react";
-import { getConfig, safe } from "@/lib/dashboard/server";
-import type { CheckStatus, DashboardConfig } from "@/lib/dashboard/types";
+import { getConfig, getInstruction, safe } from "@/lib/dashboard/server";
+import type {
+  CheckStatus,
+  DashboardConfig,
+  SpecialInstruction,
+} from "@/lib/dashboard/types";
+import { InstructionPanel } from "@/components/dashboard/InstructionPanel";
 import {
   Chip,
   ErrorState,
@@ -34,7 +39,10 @@ export const dynamic = "force-dynamic";
  * No secrets: the backend reports credentials as booleans and masked tails.
  */
 export default async function ConfigurationPage() {
-  const config = await safe(getConfig());
+  const [config, instruction] = await Promise.all([
+    safe(getConfig()),
+    safe(getInstruction()),
+  ]);
 
   if (config.error || !config.data) {
     return (
@@ -61,6 +69,7 @@ export default async function ConfigurationPage() {
 
       <div className="flex flex-col gap-6">
         <StatusPanel checks={data.checks} blocking={blocking.length} />
+        <InstructionSection instruction={instruction.data} error={instruction.error} />
         <HowItWorks />
         <SettingsPanel data={data} />
         <SetupPanel />
@@ -204,6 +213,36 @@ function Step({
         {note}
       </p>
     </div>
+  );
+}
+
+/**
+ * The one writable setting on this page.
+ *
+ * Rendered above "How it works" because it changes behaviour, and a reader who
+ * scrolls past the diagnostics is looking for what they can actually change.
+ */
+function InstructionSection({
+  instruction,
+  error,
+}: {
+  instruction: SpecialInstruction | null;
+  error: string | null;
+}) {
+  return (
+    <Panel>
+      <PanelHeader title="Special instruction" />
+      <div className="px-5 py-4">
+        {instruction ? (
+          <InstructionPanel initial={instruction} />
+        ) : (
+          <p className="text-sm text-coral-ink">
+            Could not load the instruction: {error ?? "no response"}. Everything
+            else on this page still reflects the live API.
+          </p>
+        )}
+      </div>
+    </Panel>
   );
 }
 

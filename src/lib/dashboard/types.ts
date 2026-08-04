@@ -397,3 +397,33 @@ export interface TemplateInput {
   tags: string[];
   is_active: boolean;
 }
+
+/**
+ * A template the agent wrote but nobody has saved yet.
+ *
+ * Field names match `TemplateInput` so this drops straight into the editor.
+ * `notes` and `placeholders` are advisory — they are shown once and never
+ * persisted.
+ */
+export interface GeneratedTemplate {
+  name: string;
+  subject: string;
+  body: string;
+  when_to_use: string;
+  tags: string[];
+  notes: string;
+  placeholders: string[];
+}
+
+/**
+ * Standing context set on the Configuration tab.
+ *
+ * Always read by the template generator. Reaches the drafting agent — and
+ * therefore real outbound mail — only while `applies_to_drafting` is true.
+ */
+export interface SpecialInstruction {
+  instruction: string;
+  applies_to_drafting: boolean;
+  chars: number;
+  max_chars: number;
+}

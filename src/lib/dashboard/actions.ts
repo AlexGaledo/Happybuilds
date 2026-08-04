@@ -6,8 +6,10 @@ import {
   createTemplate,
   deleteDraft,
   deleteTemplate,
+  generateTemplate,
   markDraftSent,
   markReplyRead,
+  saveInstruction,
   sendDrafts,
   setProcessed,
   startProcessing,
@@ -15,7 +17,7 @@ import {
   updateDraft,
   updateTemplate,
 } from "./server";
-import type { TargetKind, TemplateInput } from "./types";
+import type { GeneratedTemplate, TargetKind, TemplateInput } from "./types";
 
 /**
  * Mutations, as Server Actions.
@@ -189,6 +191,48 @@ export async function saveTemplateAction(
 export async function deleteTemplateAction(id: string): Promise<ActionResult> {
   try {
     await deleteTemplate(id);
+    revalidatePath("/dashboard/templates");
+    return { ok: true };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+/**
+ * Generate a template and hand it back for review.
+ *
+ * Deliberately does not revalidate: nothing was written. The caller drops the
+ * result into the editor, and `saveTemplateAction` is what creates the row.
+ */
+export async function generateTemplateAction(
+  brief: string,
+): Promise<ActionResult & { template?: GeneratedTemplate }> {
+  try {
+    const template = await generateTemplate(brief);
+    return { ok: true, template };
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 422) {
+      // The agent ran but returned something unusable — worth retrying, and
+      // saying so, rather than reporting it as a server fault.
+      return { ok: false, error: `${err.message} Try rewording the brief.` };
+    }
+    if (err instanceof ApiError && err.status === 503) {
+      return { ok: false, error: "The drafting agent is not available on the server." };
+    }
+    return fail(err);
+  }
+}
+
+// ------------------------------------------------------- special instruction
+
+export async function saveInstructionAction(payload: {
+  instruction: string;
+  applies_to_drafting: boolean;
+}): Promise<ActionResult> {
+  try {
+    await saveInstruction(payload);
+    revalidatePath("/dashboard/configuration");
+    // Generation reads it live, but the Templates tab shows whether one is set.
     revalidatePath("/dashboard/templates");
     return { ok: true };
   } catch (err) {

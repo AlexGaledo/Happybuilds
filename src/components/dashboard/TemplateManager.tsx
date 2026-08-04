@@ -2,10 +2,12 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { FileText, Plus, Power, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { FileText, Loader2, Plus, Power, Sparkles, Trash2 } from "lucide-react";
 import type { MessageTemplate, TemplateInput } from "@/lib/dashboard/types";
 import {
   deleteTemplateAction,
+  generateTemplateAction,
   saveTemplateAction,
   type ActionResult,
 } from "@/lib/dashboard/actions";
@@ -33,7 +35,16 @@ const BLANK: TemplateInput = {
  * working is usually worth keeping to edit, and drafts already written from it
  * reference it by id.
  */
-export function TemplateManager({ templates }: { templates: MessageTemplate[] }) {
+export function TemplateManager({
+  templates,
+  hasInstruction = false,
+  agentAvailable = true,
+}: {
+  templates: MessageTemplate[];
+  /** Whether a standing instruction is set — generation reads it either way. */
+  hasInstruction?: boolean;
+  agentAvailable?: boolean;
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [editing, setEditing] = useState<{ id: string | null; values: TemplateInput } | null>(
@@ -42,6 +53,53 @@ export function TemplateManager({ templates }: { templates: MessageTemplate[] })
   const [feedback, setFeedback] = useState<{ tone: "ok" | "error"; text: string } | null>(
     null,
   );
+  const [briefOpen, setBriefOpen] = useState(false);
+  const [brief, setBrief] = useState("");
+  const [generating, setGenerating] = useState(false);
+  /**
+   * Bumped whenever the editor is (re)seeded. The Editor copies `initial` into
+   * its own state on mount, so keying on the row id alone would reuse a
+   * still-mounted "new" editor and silently ignore a generated result.
+   */
+  const [seq, setSeq] = useState(0);
+  /** Advisory output from the last generation. Never persisted. */
+  const [notes, setNotes] = useState<{ notes: string; placeholders: string[] } | null>(
+    null,
+  );
+
+  function generate() {
+    if (!brief.trim()) return;
+    setFeedback(null);
+    setNotes(null);
+    setGenerating(true);
+    startTransition(async () => {
+      const result = await generateTemplateAction(brief.trim());
+      setGenerating(false);
+      if (!result.ok || !result.template) {
+        setFeedback({ tone: "error", text: result.error ?? "Generation failed" });
+        return;
+      }
+      const t = result.template;
+      setSeq((n) => n + 1);
+      // Straight into the editor, unsaved. Nothing reaches the agent's pool
+      // until the operator reads it and presses Save.
+      setEditing({
+        id: null,
+        values: {
+          name: t.name,
+          subject: t.subject,
+          body: t.body,
+          when_to_use: t.when_to_use,
+          tags: t.tags ?? [],
+          is_active: true,
+        },
+      });
+      setNotes({ notes: t.notes, placeholders: t.placeholders ?? [] });
+      setBriefOpen(false);
+      setBrief("");
+      setFeedback({ tone: "ok", text: "Generated — review it, then save." });
+    });
+  }
 
   function run(work: () => Promise<ActionResult>, okText: string, close = false) {
     setFeedback(null);
@@ -77,11 +135,30 @@ export function TemplateManager({ templates }: { templates: MessageTemplate[] })
       <div className="flex flex-wrap items-center gap-3">
         <button
           type="button"
-          onClick={() => setEditing({ id: null, values: { ...BLANK } })}
+          onClick={() => {
+            setSeq((n) => n + 1);
+            setNotes(null);
+            setEditing({ id: null, values: { ...BLANK } });
+          }}
           className="inline-flex min-h-11 items-center gap-2 rounded-full bg-navy-800 px-4 text-sm font-semibold text-white transition-colors hover:bg-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           <Plus aria-hidden className="size-4" />
           New template
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setBriefOpen((v) => !v);
+            setFeedback(null);
+          }}
+          disabled={pending || !agentAvailable}
+          aria-expanded={briefOpen}
+          data-testid="generate-template"
+          title={agentAvailable ? undefined : "The drafting agent is not available"}
+          className="inline-flex min-h-11 items-center gap-2 rounded-full border border-border px-4 text-sm font-semibold transition-colors hover:bg-navy-800/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500 disabled:cursor-not-allowed disabled:opacity-45 dark:hover:bg-white/5"
+        >
+          <Sparkles aria-hidden className="size-4" />
+          Generate with AI
         </button>
         <p className="text-xs text-muted">
           {active} of {templates.length} active — the agent only sees active ones.
@@ -108,9 +185,114 @@ export function TemplateManager({ templates }: { templates: MessageTemplate[] })
         </div>
       )}
 
+      {briefOpen && (
+        <div
+          data-testid="generate-panel"
+          className="rounded-2xl border border-border bg-surface px-4 py-4"
+        >
+          <h3 className="text-sm font-semibold">Generate a template</h3>
+          <p className="mt-1 text-xs leading-relaxed text-muted">
+            Describe the situation this template is for — the kind of lead, the
+            angle, anything it must or must not say. The agent writes the copy
+            and leaves <code>{"{{placeholders}}"}</code> for the parts that
+            change per lead.
+          </p>
+
+          <p className="mt-2 text-xs leading-relaxed text-muted">
+            {hasInstruction ? (
+              <>
+                Your{" "}
+                <Link
+                  href="/dashboard/configuration"
+                  className="font-semibold text-coral-ink underline underline-offset-2"
+                >
+                  standing instruction
+                </Link>{" "}
+                is included automatically.
+              </>
+            ) : (
+              <>
+                No standing instruction is set. Add one on{" "}
+                <Link
+                  href="/dashboard/configuration"
+                  className="font-semibold text-coral-ink underline underline-offset-2"
+                >
+                  Configuration
+                </Link>{" "}
+                so every generation shares the same business context.
+              </>
+            )}
+          </p>
+
+          <label className="mt-3 block">
+            <span className="text-xs font-semibold">Brief</span>
+            <textarea
+              value={brief}
+              onChange={(e) => setBrief(e.target.value)}
+              rows={5}
+              maxLength={2000}
+              placeholder="e.g. A follow-up for e-commerce operators who post repetitive data-entry jobs. Lead with the hours the process costs them, not the tech. Keep it under 120 words."
+              className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-base leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-coral-500 pointer-fine:text-sm"
+            />
+          </label>
+
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={generate}
+              disabled={pending || !brief.trim()}
+              aria-busy={generating}
+              className="inline-flex min-h-11 items-center gap-2 rounded-full bg-navy-800 px-4 text-sm font-semibold text-white transition-colors hover:bg-navy-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500 disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              {generating ? (
+                <Loader2 aria-hidden className="size-4 animate-spin" />
+              ) : (
+                <Sparkles aria-hidden className="size-4" />
+              )}
+              {generating ? "Writing…" : "Generate"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setBriefOpen(false)}
+              className="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold text-muted hover:bg-navy-800/[0.04] dark:hover:bg-white/5"
+            >
+              Cancel
+            </button>
+            <span className="text-xs text-muted">
+              {brief.length}/2000 · takes up to a minute
+            </span>
+          </div>
+        </div>
+      )}
+
+      {notes && (
+        <div
+          role="note"
+          data-testid="generate-notes"
+          className="rounded-2xl border border-border bg-surface px-4 py-3 text-xs leading-relaxed text-muted"
+        >
+          {notes.notes && (
+            <p>
+              <strong className="font-semibold text-foreground">Angle:</strong>{" "}
+              {notes.notes}
+            </p>
+          )}
+          <p className="mt-1">
+            <strong className="font-semibold text-foreground">Placeholders:</strong>{" "}
+            {notes.placeholders.length
+              ? notes.placeholders.map((p) => `{{${p}}}`).join(", ")
+              : "none — every line is fixed text"}
+          </p>
+          <p className="mt-1">
+            Nothing has been saved yet. Edit below, then press Save to add it to
+            the pool.
+          </p>
+        </div>
+      )}
+
       {editing && (
         <Editor
-          key={editing.id ?? "new"}
+          key={`${editing.id ?? "new"}-${seq}`}
           initial={editing.values}
           isNew={editing.id === null}
           pending={pending}

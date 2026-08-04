@@ -4,6 +4,7 @@ import type {
   DashboardConfig,
   DraftCounts,
   DraftListResponse,
+  GeneratedTemplate,
   ListingFacets,
   ListingFilters,
   ListingHistogram,
@@ -18,6 +19,7 @@ import type {
   ProcessStatus,
   ReplyListResponse,
   ScrapeStatus,
+  SpecialInstruction,
   TargetKind,
   TemplateListResponse,
 } from "./types";
@@ -368,4 +370,32 @@ export function updateTemplate(id: string, payload: unknown) {
 
 export function deleteTemplate(id: string) {
   return apiSend(`/templates/${id}`, { method: "DELETE" });
+}
+
+/**
+ * Ask the agent for a template. Persists nothing — the result is handed to the
+ * editor for review, and only Save creates a row.
+ *
+ * The standing instruction is deliberately not sent: the backend reads it from
+ * `app_settings`, so what the generator saw is always what the Configuration
+ * tab shows.
+ */
+export function generateTemplate(brief: string): Promise<GeneratedTemplate> {
+  return apiSend<GeneratedTemplate>("/templates/generate", { body: { brief } });
+}
+
+// ------------------------------------------------------- special instruction
+
+export function getInstruction(): Promise<SpecialInstruction> {
+  return apiGet<SpecialInstruction>("/config/instruction");
+}
+
+export function saveInstruction(payload: {
+  instruction: string;
+  applies_to_drafting: boolean;
+}): Promise<SpecialInstruction> {
+  return apiSend<SpecialInstruction>("/config/instruction", {
+    method: "PUT",
+    body: payload,
+  });
 }
