@@ -152,3 +152,248 @@ export const LEAD_STATUSES: LeadStatus[] = [
   "won",
   "lost",
 ];
+
+// ------------------------------------------------------- unified pipeline
+
+/**
+ * A row in the pipeline tab, projected from either `listings` or `leads`.
+ *
+ * The two sources are different shapes; the backend's `repos/pipeline.py`
+ * unions them onto this one. `kind` is what tells them apart, and it is
+ * required on every write back (marking processed, queueing for the agent)
+ * because the id alone does not identify a table.
+ */
+export type TargetKind = "listing" | "lead";
+
+export interface PipelineItem {
+  kind: TargetKind;
+  id: string;
+  title: string;
+  preview: string | null;
+  contact_name: string | null;
+  contact_email: string | null;
+  /** The original post. Null for inbound leads — there is no page to open. */
+  url: string | null;
+  job_type: string | null;
+  category: string | null;
+  salary: string | null;
+  /** Posted-at for a listing, submitted-at for an inbound lead. */
+  received_at: string | null;
+  processed_at: string | null;
+  processed_by: string | null;
+  /**
+   * Three-state. `null` = not judged yet, `false` = the agent read it and
+   * decided it isn't a fit for CRM / automation / custom software work, so no
+   * draft was written. `false` is a finished outcome, not a failure.
+   */
+  qualified: boolean | null;
+  fit_reason: string | null;
+  source: string | null;
+  draft_id: string | null;
+  draft_status: DraftStatus | null;
+  draft_channel: DraftChannel | null;
+}
+
+export interface PipelineListResponse {
+  total: number;
+  limit: number;
+  offset: number;
+  items: PipelineItem[];
+}
+
+export interface PipelineCounts {
+  unprocessed: number;
+  processed: number;
+  unprocessed_listings: number;
+  unprocessed_leads: number;
+  processed_listings: number;
+  processed_leads: number;
+  /** Judged a fit — these are the ones that got a draft. */
+  qualified: number;
+  /** Judged not a fit. Read and closed out, deliberately no draft. */
+  rejected: number;
+}
+
+/** Published to Redis by the processing service; shape mirrors `ProcessState`. */
+export interface ProcessRunState {
+  running?: boolean;
+  trigger?: string;
+  started_at?: string;
+  finished_at?: string;
+  requested?: number;
+  processed?: number;
+  drafted?: number;
+  /** Qualified out — read, judged not a fit, no draft written. */
+  rejected?: number;
+  contacts_found?: number;
+  failed?: number;
+  error?: string | null;
+  log?: string[];
+}
+
+export interface ProcessStatus {
+  running: boolean;
+  lock_holder: string | null;
+  /** False when the Claude Code CLI is not installed on the API host. */
+  agent_available: boolean;
+  last_run: ProcessRunState | null;
+}
+
+// ---------------------------------------------------------------- drafts
+
+export type DraftChannel = "email" | "manual";
+export type DraftStatus = "ready" | "sending" | "sent" | "failed";
+
+export interface Draft {
+  id: string;
+  target_kind: TargetKind;
+  target_id: string;
+  template_id: string | null;
+  template_name: string | null;
+  subject: string;
+  body: string;
+  /** `manual` means no address was found — send it by hand via `source_url`. */
+  channel: DraftChannel;
+  status: DraftStatus;
+  recipient_name: string | null;
+  recipient_email: string | null;
+  source_url: string | null;
+  source_title: string | null;
+  rationale: string | null;
+  model: string | null;
+  error: string | null;
+  gmail_thread_id: string | null;
+  created_at: string;
+  updated_at: string;
+  sent_at: string | null;
+  reply_count: number;
+}
+
+export interface DraftListResponse {
+  total: number;
+  limit: number;
+  offset: number;
+  items: Draft[];
+}
+
+export interface DraftCounts {
+  outbox: number;
+  manual: number;
+  sent: number;
+  failed: number;
+  inbox: number;
+  replies: number;
+}
+
+export interface MailboxStatus {
+  configured: boolean;
+  address: string | null;
+}
+
+export interface DraftSendResult {
+  draft_id: string;
+  ok: boolean;
+  error: string | null;
+}
+
+export interface DraftSendResponse {
+  sent: number;
+  failed: number;
+  results: DraftSendResult[];
+}
+
+// --------------------------------------------------------------- replies
+
+export interface Reply {
+  id: string;
+  draft_id: string | null;
+  from_email: string;
+  from_name: string | null;
+  subject: string | null;
+  snippet: string;
+  body: string;
+  received_at: string;
+  read_at: string | null;
+  gmail_message_id: string;
+  gmail_thread_id: string;
+}
+
+export interface ReplyListResponse {
+  total: number;
+  limit: number;
+  offset: number;
+  unread: number;
+  items: Reply[];
+}
+
+// ------------------------------------------------------------- templates
+
+export interface MessageTemplate {
+  id: string;
+  name: string;
+  subject: string;
+  body: string;
+  /** The field the agent actually selects on. Empty = it picks on vibes. */
+  when_to_use: string;
+  tags: string[];
+  /** "preloaded" (shipped by the seed migration) or "user". */
+  origin: string;
+  is_active: boolean;
+  times_used: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TemplateListResponse {
+  total: number;
+  items: MessageTemplate[];
+}
+
+// --------------------------------------------------------- configuration
+
+/** One dependency and whether it is usable right now. */
+export interface CheckStatus {
+  key: string;
+  label: string;
+  ok: boolean;
+  /** "ready" | "missing" | "degraded" — degraded means present but limited. */
+  state: string;
+  detail: string;
+  /** What to do about it. Empty when ok. */
+  fix: string;
+}
+
+export interface DashboardConfig {
+  environment: string;
+  checks: CheckStatus[];
+  agent: {
+    binary: string;
+    resolved_path: string | null;
+    batch_size: number;
+    timeout_seconds: number;
+    allowed_tools: string[];
+  };
+  mail: {
+    configured: boolean;
+    address: string | null;
+    /** Masked tail only — never the full credential. */
+    client_id_tail: string | null;
+    poll_lookback_hours: number;
+  };
+  scrape: {
+    window_hours: number;
+    crawl_delay: number;
+    max_detail_fetches: number;
+  };
+  active_templates: number;
+  total_templates: number;
+}
+
+export interface TemplateInput {
+  name: string;
+  subject: string;
+  body: string;
+  when_to_use: string;
+  tags: string[];
+  is_active: boolean;
+}

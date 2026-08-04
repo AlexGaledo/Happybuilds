@@ -4,9 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
+  Columns2,
+  FileText,
+  Settings,
   KanbanSquare,
   LayoutDashboard,
   Lock,
+  Mails,
   Menu,
   Sparkles,
   Table2,
@@ -19,6 +23,10 @@ import { activeNavHref, dashboardNav, type DashboardIcon } from "@/lib/dashboard
 const icons: Record<DashboardIcon, typeof LayoutDashboard> = {
   overview: LayoutDashboard,
   leads: Table2,
+  pipeline: Columns2,
+  drafts: Mails,
+  templates: FileText,
+  configuration: Settings,
   outreach: KanbanSquare,
   assistant: Sparkles,
 };

@@ -1,6 +1,9 @@
 import "server-only";
 
 import type {
+  DashboardConfig,
+  DraftCounts,
+  DraftListResponse,
   ListingFacets,
   ListingFilters,
   ListingHistogram,
@@ -9,7 +12,14 @@ import type {
   Listing,
   LeadListResponse,
   LeadStats,
+  MailboxStatus,
+  PipelineCounts,
+  PipelineListResponse,
+  ProcessStatus,
+  ReplyListResponse,
   ScrapeStatus,
+  TargetKind,
+  TemplateListResponse,
 } from "./types";
 
 /**
@@ -170,4 +180,192 @@ export function getLeads(
 
 export function getLeadStats(): Promise<LeadStats> {
   return apiGet<LeadStats>("/leads/stats");
+}
+
+// ------------------------------------------------------------------ pipeline
+
+/** Generic non-GET call. Same error shape as `apiGet`, so callers only ever
+ * have to catch `ApiError`. */
+async function apiSend<T>(
+  path: string,
+  { method = "POST", body }: { method?: string; body?: unknown } = {},
+): Promise<T> {
+  const url = `${API_INTERNAL_URL}${path}`;
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      method,
+      cache: "no-store",
+      headers: {
+        Accept: "application/json",
+        ...(body === undefined ? {} : { "Content-Type": "application/json" }),
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+  } catch {
+    throw new ApiError(0, path, `Cannot reach the API at ${API_INTERNAL_URL}`);
+  }
+  if (!res.ok) {
+    let detail = `${res.status} ${res.statusText}`;
+    try {
+      const parsed = await res.json();
+      if (parsed?.detail) {
+        detail =
+          typeof parsed.detail === "string"
+            ? parsed.detail
+            : JSON.stringify(parsed.detail);
+      }
+    } catch {
+      /* body wasn't JSON */
+    }
+    throw new ApiError(res.status, path, detail);
+  }
+  if (res.status === 204) return undefined as T;
+  return (await res.json()) as T;
+}
+
+export interface PipelineQuery {
+  processed?: boolean;
+  kind?: TargetKind;
+  qualified?: boolean;
+  q?: string;
+  hours?: number;
+  limit?: number;
+  offset?: number;
+  sort?: string;
+  order?: string;
+}
+
+export function getPipeline(query: PipelineQuery = {}): Promise<PipelineListResponse> {
+  return apiGet<PipelineListResponse>("/pipeline", {
+    processed: query.processed,
+    kind: query.kind,
+    qualified: query.qualified,
+    q: query.q,
+    hours: query.hours,
+    limit: query.limit ?? 25,
+    offset: query.offset ?? 0,
+    sort: query.sort,
+    order: query.order,
+  });
+}
+
+export function getPipelineCounts(): Promise<PipelineCounts> {
+  return apiGet<PipelineCounts>("/pipeline/counts");
+}
+
+export function getProcessStatus(): Promise<ProcessStatus> {
+  return apiGet<ProcessStatus>("/pipeline/process/status");
+}
+
+/** Start a drafting batch. 409 when one already holds the Redis lock. */
+export function startProcessing(payload: {
+  targets?: { kind: TargetKind; id: string }[];
+  kind?: TargetKind;
+  limit?: number;
+}): Promise<{ status: string }> {
+  return apiSend("/pipeline/process", { body: payload });
+}
+
+export function setProcessed(
+  kind: TargetKind,
+  id: string,
+  processed: boolean,
+): Promise<{ processed: boolean }> {
+  return apiSend(`/pipeline/${kind}/${id}/processed`, { body: { processed } });
+}
+
+// -------------------------------------------------------------------- drafts
+
+export function getDrafts(
+  query: {
+    channel?: "email" | "manual";
+    status?: string;
+    include_sent?: boolean;
+    q?: string;
+    limit?: number;
+    offset?: number;
+  } = {},
+): Promise<DraftListResponse> {
+  return apiGet<DraftListResponse>("/drafts", {
+    channel: query.channel,
+    status: query.status,
+    include_sent: query.include_sent,
+    q: query.q,
+    limit: query.limit ?? 50,
+    offset: query.offset ?? 0,
+  });
+}
+
+export function getDraftCounts(): Promise<DraftCounts> {
+  return apiGet<DraftCounts>("/drafts/counts");
+}
+
+export function getMailboxStatus(): Promise<MailboxStatus> {
+  return apiGet<MailboxStatus>("/drafts/mailbox");
+}
+
+export function sendDrafts(draftIds: string[]) {
+  return apiSend("/drafts/send", { body: { draft_ids: draftIds } });
+}
+
+export function updateDraft(
+  id: string,
+  patch: { subject?: string; body?: string; recipient_email?: string },
+) {
+  return apiSend(`/drafts/${id}`, { method: "PATCH", body: patch });
+}
+
+export function markDraftSent(id: string) {
+  return apiSend(`/drafts/${id}/mark-sent`, { body: {} });
+}
+
+export function deleteDraft(id: string) {
+  return apiSend(`/drafts/${id}`, { method: "DELETE" });
+}
+
+// ------------------------------------------------------------------- replies
+
+export function getReplies(
+  query: { unread_only?: boolean; q?: string; limit?: number; offset?: number } = {},
+): Promise<ReplyListResponse> {
+  return apiGet<ReplyListResponse>("/drafts/replies", {
+    unread_only: query.unread_only,
+    q: query.q,
+    limit: query.limit ?? 50,
+    offset: query.offset ?? 0,
+  });
+}
+
+export function syncReplies() {
+  return apiSend<{ threads: number; fetched: number; stored: number }>(
+    "/drafts/replies/sync",
+    { body: {} },
+  );
+}
+
+export function markReplyRead(id: string, read: boolean) {
+  return apiSend(`/drafts/replies/${id}/read`, { body: { read } });
+}
+
+// ----------------------------------------------------------------- templates
+
+export function getConfig(): Promise<DashboardConfig> {
+  return apiGet<DashboardConfig>("/config");
+}
+
+export function getTemplates(activeOnly = false): Promise<TemplateListResponse> {
+  return apiGet<TemplateListResponse>("/templates", { active_only: activeOnly });
+}
+
+export function createTemplate(payload: unknown) {
+  return apiSend("/templates", { body: payload });
+}
+
+export function updateTemplate(id: string, payload: unknown) {
+  return apiSend(`/templates/${id}`, { method: "PATCH", body: payload });
+}
+
+export function deleteTemplate(id: string) {
+  return apiSend(`/templates/${id}`, { method: "DELETE" });
 }

@@ -54,10 +54,37 @@ actually asked for sat behind the lot.
 collide; on a phone it would be a horizontal scroller showing one truncated
 column. Cards use a different `data-testid` so the two never double-count.
 
-**`client` and `email` are permanently empty.** onlinejobs.ph hides employer
-identity and contact details from anonymous visitors — see
-`../fickles-automated-lead/docs/scraping-notes.md`. The UI says so rather than
-leaving cells mysteriously blank.
+**`client` and `email` start empty on every scraped row.** onlinejobs.ph hides
+employer identity and contact details from anonymous visitors — see
+`../fickles-automated-lead/docs/scraping-notes.md`. The Leads table says so
+rather than leaving cells mysteriously blank. The processing agent recovers an
+address when the post's own text contains one; the rest stay empty, which is
+what routes their drafts to the send-by-hand column.
+
+**Pipeline, Drafts and Templates are the outreach half.** `/dashboard/pipeline`
+shows the unprocessed queue and the processed table side by side — side by side
+rather than as tabs because the point is watching work move left to right.
+`/dashboard/drafts` has three columns: replies received, drafts with an address
+to send to, and drafts with none (those carry a link to the original post).
+`/dashboard/templates` is the pool the drafting agent picks from. Backend detail
+lives in `../fickles-automated-lead/docs/processing.md`.
+
+**Reads go through `server.ts`, writes through `actions.ts`.** Server Actions
+rather than a folder of route handlers, for the same reason
+`/api/dashboard/scrape` is narrow rather than a catch-all proxy: each one
+exposes exactly the operation it names, so the loopback-only backend never gains
+a general public surface. `/api/dashboard/process` is the one exception — a GET
+route handler, because the client polls it on a timer while a batch runs and an
+action would revalidate the whole route tree on every tick.
+
+**Selection is React state, not URL state.** Everything else on these pages is
+URL-driven and shareable; a selection is momentary and per-person. A shared link
+arriving with twelve rows pre-ticked next to a Send button is a trap.
+
+**Outreach and the AI assistant are locked.** Their previews are `aria-hidden`,
+`inert` and `pointer-events-none`, so nothing behind the veil is clickable,
+focusable, or reachable by a screen reader — a blur alone would leave a keyboard
+user tabbing through dead controls.
 
 **Outreach and the AI assistant are locked.** Their previews are `aria-hidden`,
 `inert` and `pointer-events-none`, so nothing behind the veil is clickable,

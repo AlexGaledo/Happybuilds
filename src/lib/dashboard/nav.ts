@@ -9,6 +9,10 @@
 export type DashboardIcon =
   | "overview"
   | "leads"
+  | "pipeline"
+  | "drafts"
+  | "templates"
+  | "configuration"
   | "outreach"
   | "assistant";
 
@@ -34,6 +38,30 @@ export const dashboardNav: DashboardNavItem[] = [
     label: "Leads",
     icon: "leads",
     description: "Every scraped job post, filterable and searchable.",
+  },
+  {
+    href: "/dashboard/pipeline",
+    label: "Pipeline",
+    icon: "pipeline",
+    description: "Unworked queue and processed leads, side by side.",
+  },
+  {
+    href: "/dashboard/drafts",
+    label: "Drafts",
+    icon: "drafts",
+    description: "Replies, the outbox, and drafts you send by hand.",
+  },
+  {
+    href: "/dashboard/templates",
+    label: "Templates",
+    icon: "templates",
+    description: "The outreach pool the drafting agent picks from.",
+  },
+  {
+    href: "/dashboard/configuration",
+    label: "Configuration",
+    icon: "configuration",
+    description: "What's wired up, and how the pipeline behaves.",
   },
   {
     href: "/dashboard/outreach",
