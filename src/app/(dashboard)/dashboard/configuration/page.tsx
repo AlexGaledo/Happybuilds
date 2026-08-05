@@ -253,6 +253,7 @@ function SettingsPanel({ data }: { data: DashboardConfig }) {
         <PanelHeader title="Drafting agent" />
         <dl className="flex flex-col gap-2.5 px-5 py-4 text-sm">
           <Row label="Binary" value={data.agent.resolved_path ?? data.agent.binary} mono />
+          <Row label="Model" value={data.agent.model} mono />
           <Row label="Batch size" value={`${data.agent.batch_size} leads per run`} />
           <Row
             label="Timeout"

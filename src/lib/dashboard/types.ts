@@ -369,6 +369,8 @@ export interface DashboardConfig {
   agent: {
     binary: string;
     resolved_path: string | null;
+    /** Pinned model id passed to `--model`, and written to `Draft.model`. */
+    model: string;
     batch_size: number;
     timeout_seconds: number;
     allowed_tools: string[];
