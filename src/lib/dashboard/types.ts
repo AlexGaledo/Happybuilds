@@ -262,7 +262,12 @@ export interface Draft {
   rationale: string | null;
   model: string | null;
   error: string | null;
-  gmail_thread_id: string | null;
+  /**
+   * Opaque thread key, never parsed. Gmail's own `threadId` under
+   * `MAIL_TRANSPORT=gmail`; an RFC 5322 `Message-ID` we minted under
+   * `hostinger`, because plain SMTP hands back no thread handle.
+   */
+  mail_thread_id: string | null;
   created_at: string;
   updated_at: string;
   sent_at: string | null;
@@ -288,6 +293,8 @@ export interface DraftCounts {
 export interface MailboxStatus {
   configured: boolean;
   address: string | null;
+  /** "gmail" | "hostinger" — which backend is live, so the UI names the right fix. */
+  transport: string;
 }
 
 export interface DraftSendResult {
@@ -314,8 +321,8 @@ export interface Reply {
   body: string;
   received_at: string;
   read_at: string | null;
-  gmail_message_id: string;
-  gmail_thread_id: string;
+  mail_message_id: string;
+  mail_thread_id: string;
 }
 
 export interface ReplyListResponse {
@@ -376,11 +383,33 @@ export interface DashboardConfig {
     allowed_tools: string[];
   };
   mail: {
+    /** "gmail" | "hostinger". Both transports stay wired; this picks one. */
+    transport: string;
+    /** Whether the *active* transport can send. What the UI gates on. */
     configured: boolean;
     address: string | null;
-    /** Masked tail only — never the full credential. */
-    client_id_tail: string | null;
     poll_lookback_hours: number;
+    gmail: {
+      configured: boolean;
+      address: string | null;
+      /** Masked tail only — never the full credential. */
+      client_id_tail: string | null;
+    };
+    hostinger: {
+      configured: boolean;
+      smtp_host: string;
+      smtp_port: number;
+      imap_host: string;
+      imap_port: number;
+      username: string | null;
+      /**
+       * Presence only. A mailbox password is the whole credential — unlike an
+       * OAuth client id, even a masked tail of it is a leak.
+       */
+      password_set: boolean;
+      from_address: string | null;
+      from_name: string | null;
+    };
   };
   scrape: {
     window_hours: number;

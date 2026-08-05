@@ -110,6 +110,11 @@ export function DraftsBoard({
   }
 
   const mailReady = mailbox?.configured ?? false;
+  // Two transports are wired at once (MAIL_TRANSPORT). Naming the wrong one
+  // here sends you to the wrong half of .env, so every string below keys off
+  // whichever is actually live rather than hardcoding "Gmail".
+  const isHostinger = mailbox?.transport === "hostinger";
+  const mailLabel = isHostinger ? "Hostinger mail" : "Gmail";
 
   return (
     <div className="flex flex-col gap-4">
@@ -119,15 +124,34 @@ export function DraftsBoard({
           className="rounded-2xl border border-amber-500/30 bg-amber-500/8 px-4 py-3 text-sm leading-relaxed text-amber-ink"
         >
           <strong className="font-semibold">Sending is not configured.</strong>{" "}
-          Set <code className="font-mono text-xs">GMAIL_ADDRESS</code>,{" "}
-          <code className="font-mono text-xs">GMAIL_CLIENT_ID</code>,{" "}
-          <code className="font-mono text-xs">GMAIL_CLIENT_SECRET</code> and{" "}
-          <code className="font-mono text-xs">GMAIL_REFRESH_TOKEN</code> on the
-          API host — run{" "}
-          <code className="font-mono text-xs">
-            uv run python -m app.cli gmail-auth
-          </code>{" "}
-          to get them. Drafts still generate; only sending is blocked.
+          {isHostinger ? (
+            <>
+              Set <code className="font-mono text-xs">SMTP_USERNAME</code> and{" "}
+              <code className="font-mono text-xs">SMTP_PASSWORD</code> on the API
+              host — see{" "}
+              <code className="font-mono text-xs">
+                docs/hostinger-mail-setup.md
+              </code>
+              , then verify with{" "}
+              <code className="font-mono text-xs">
+                uv run python -m app.cli mail-check
+              </code>
+              .
+            </>
+          ) : (
+            <>
+              Set <code className="font-mono text-xs">GMAIL_ADDRESS</code>,{" "}
+              <code className="font-mono text-xs">GMAIL_CLIENT_ID</code>,{" "}
+              <code className="font-mono text-xs">GMAIL_CLIENT_SECRET</code> and{" "}
+              <code className="font-mono text-xs">GMAIL_REFRESH_TOKEN</code> on
+              the API host — run{" "}
+              <code className="font-mono text-xs">
+                uv run python -m app.cli gmail-auth
+              </code>{" "}
+              to get them.
+            </>
+          )}{" "}
+          Drafts still generate; only sending is blocked.
         </div>
       )}
 
@@ -167,8 +191,8 @@ export function DraftsBoard({
               title="No replies yet"
               description={
                 mailReady
-                  ? "Replies to sent messages land here. Use Check to poll Gmail now."
-                  : "Replies are read from Gmail, which isn't configured yet."
+                  ? `Replies to sent messages land here. Use Check to poll ${mailLabel} now.`
+                  : `Replies are read from ${mailLabel}, which isn't configured yet.`
               }
             />
           ) : (
@@ -448,7 +472,10 @@ function DraftCard({
             onClick={onSend}
             disabled={pending || !canSend}
             tone="primary"
-            title={canSend ? undefined : "Gmail is not configured"}
+            // Deliberately not naming the transport: this card is several
+            // levels down and the banner at the top of the board already says
+            // which one, with the exact variables to set.
+            title={canSend ? undefined : "Sending is not configured"}
           >
             <Send aria-hidden className="size-3.5" />
             Send

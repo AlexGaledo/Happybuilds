@@ -70,9 +70,9 @@ export default async function ConfigurationPage() {
       <div className="flex flex-col gap-6">
         <StatusPanel checks={data.checks} blocking={blocking.length} />
         <InstructionSection instruction={instruction.data} error={instruction.error} />
-        <HowItWorks />
+        <HowItWorks transport={data.mail.transport} />
         <SettingsPanel data={data} />
-        <SetupPanel />
+        <SetupPanel transport={data.mail.transport} />
       </div>
     </>
   );
@@ -150,7 +150,7 @@ function StatusPanel({
 }
 
 /** The behaviour that is easy to misread from the tables alone. */
-function HowItWorks() {
+function HowItWorks({ transport }: { transport: string }) {
   return (
     <Panel>
       <PanelHeader
@@ -176,8 +176,16 @@ function HowItWorks() {
           icon={Mail}
           n="3"
           title="Send, then watch"
-          body="Drafts with an address sit in the Outbox until you send them — nothing goes out on its own. Sending records the Gmail thread, which is what lets replies thread back to the exact draft that caused them."
-          note="Replies land in the Inbox column. Polling is scoped to threads you started, so the rest of your mail is never read."
+          body={
+            transport === "hostinger"
+              ? "Drafts with an address sit in the Outbox until you send them — nothing goes out on its own. Sending stamps the message with an ID we mint and record, which is what lets a reply thread back to the exact draft that caused it."
+              : "Drafts with an address sit in the Outbox until you send them — nothing goes out on its own. Sending records the Gmail thread, which is what lets replies thread back to the exact draft that caused them."
+          }
+          note={
+            transport === "hostinger"
+              ? "Replies land in the Inbox column. The poller reads the recent inbox and keeps only messages quoting an ID you sent — the rest are dropped, never stored, and the mailbox is opened read-only."
+              : "Replies land in the Inbox column. Polling is scoped to threads you started, so the rest of your mail is never read."
+          }
         />
       </div>
     </Panel>
@@ -282,20 +290,53 @@ function SettingsPanel({ data }: { data: DashboardConfig }) {
       <Panel>
         <PanelHeader title="Mailbox" />
         <dl className="flex flex-col gap-2.5 px-5 py-4 text-sm">
-          <Row label="Address" value={data.mail.address ?? "Not set"} mono />
           <Row
-            label="Client ID"
-            value={data.mail.client_id_tail ?? "Not set"}
-            mono
+            label="Transport"
+            value={
+              data.mail.transport === "hostinger"
+                ? "Hostinger (SMTP + IMAP)"
+                : "Gmail (OAuth + REST)"
+            }
           />
+          <Row label="Address" value={data.mail.address ?? "Not set"} mono />
+          {data.mail.transport === "hostinger" ? (
+            <>
+              <Row label="SMTP" value={`${data.mail.hostinger.smtp_host}:${data.mail.hostinger.smtp_port}`} mono />
+              <Row label="IMAP" value={`${data.mail.hostinger.imap_host}:${data.mail.hostinger.imap_port}`} mono />
+              <Row
+                label="Password"
+                value={data.mail.hostinger.password_set ? "Set" : "Not set"}
+              />
+            </>
+          ) : (
+            <Row
+              label="Client ID"
+              value={data.mail.gmail.client_id_tail ?? "Not set"}
+              mono
+            />
+          )}
           <Row
             label="Reply lookback"
             value={`${data.mail.poll_lookback_hours} hours`}
           />
           <p className="text-xs leading-relaxed text-muted">
-            Gmail REST with an OAuth refresh token, not the MCP connector — that
-            connector exposes no send tool at all, only draft creation. Polls
-            overlap deliberately; re-reading a message is a no-op.
+            {data.mail.transport === "hostinger" ? (
+              <>
+                SMTP out, IMAP in. There is no provider thread id over plain
+                SMTP, so each sent message carries a{" "}
+                <code className="font-mono text-[11px]">Message-ID</code> we
+                mint and a reply is matched back on it. The inbox is opened
+                read-only, so polling never marks your mail as seen. The mailbox
+                password is the whole credential — it is never returned here,
+                only whether one is set.
+              </>
+            ) : (
+              <>
+                Gmail REST with an OAuth refresh token, not the MCP connector —
+                that connector exposes no send tool at all, only draft creation.
+              </>
+            )}{" "}
+            Polls overlap deliberately; re-reading a message is a no-op.
           </p>
         </dl>
       </Panel>
@@ -349,7 +390,8 @@ function Row({
   );
 }
 
-function SetupPanel() {
+function SetupPanel({ transport }: { transport: string }) {
+  const hostinger = transport === "hostinger";
   return (
     <Panel>
       <PanelHeader
@@ -357,12 +399,21 @@ function SetupPanel() {
         description="Commands run on the API host, from /opt/fickles/automated-lead."
       />
       <div className="flex flex-col gap-5 px-5 py-4">
-        <Instruction
-          title="Connect Gmail"
-          body="Needed for sending and for the Inbox. Create a Google Cloud project, enable the Gmail API, then create an OAuth client of type Desktop app. Publish the consent screen — while it sits in Testing, Google expires the refresh token after 7 days and sending dies silently."
-          command={"uv run python -m app.cli gmail-auth --client-id <ID> --client-secret <SECRET>"}
-          after="Prints a consent URL, then a second command to exchange the code. Paste the four values it gives you into .env and restart the API."
-        />
+        {hostinger ? (
+          <Instruction
+            title="Connect the mailbox"
+            body="Needed for sending and for the Inbox. Put the mailbox password in SMTP_PASSWORD on the API host — it is the whole credential, with no OAuth scoping behind it. Set MAIL_FROM_ADDRESS only if you are sending as an alias, and confirm the provider allows the mismatch first: a rejection arrives as a 550 in the middle of a batch, not at startup."
+            command={"uv run python -m app.cli mail-check"}
+            after="Authenticates against SMTP and IMAP without sending anything. Restart the API once it passes."
+          />
+        ) : (
+          <Instruction
+            title="Connect Gmail"
+            body="Needed for sending and for the Inbox. Create a Google Cloud project, enable the Gmail API, then create an OAuth client of type Desktop app. Publish the consent screen — while it sits in Testing, Google expires the refresh token after 7 days and sending dies silently."
+            command={"uv run python -m app.cli gmail-auth --client-id <ID> --client-secret <SECRET>"}
+            after="Prints a consent URL, then a second command to exchange the code. Paste the four values it gives you into .env and restart the API."
+          />
+        )}
         <Instruction
           title="Run a batch by hand"
           body="Processes the oldest unqualified leads first — a queue worked newest-first starves its own tail."
@@ -391,8 +442,10 @@ function SetupPanel() {
           Deeper detail lives in the repo:{" "}
           <code className="font-mono text-[11px]">docs/processing.md</code> for
           the pipeline and its threat model,{" "}
-          <code className="font-mono text-[11px]">docs/gmail-setup.md</code> for
-          the mail flow, and{" "}
+          <code className="font-mono text-[11px]">
+            {hostinger ? "docs/hostinger-mail-setup.md" : "docs/gmail-setup.md"}
+          </code>{" "}
+          for the mail flow, and{" "}
           <code className="font-mono text-[11px]">docs/scraping-notes.md</code>{" "}
           for why employer contact details are missing in the first place. The{" "}
           <Link

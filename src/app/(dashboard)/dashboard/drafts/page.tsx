@@ -44,7 +44,7 @@ export default async function DraftsPage() {
     <>
       <PageHeader
         title="Drafts"
-        description="Messages the agent wrote, and what came back. Drafts with a contact address send over Gmail; the rest carry a link to the original post so you can send them yourself."
+        description="Messages the agent wrote, and what came back. Drafts with a contact address send from the configured mailbox; the rest carry a link to the original post so you can send them yourself."
       />
 
       <DraftsBoard
