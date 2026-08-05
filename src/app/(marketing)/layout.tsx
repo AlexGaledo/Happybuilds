@@ -3,6 +3,7 @@ import { MotionProvider } from "@/components/providers/MotionProvider";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { JsonLd } from "@/components/JsonLd";
+import { Atmosphere } from "@/components/Atmosphere";
 import { organizationSchema } from "@/lib/structuredData";
 
 /**
@@ -19,7 +20,12 @@ export default function MarketingLayout({
     <MotionProvider>
       <SmoothScroll>
         <JsonLd data={organizationSchema()} />
-        <div className="flex min-h-screen flex-col">
+        {/* Ambient colour behind everything, then the page on top of it. The
+            dotted texture rides the content wrapper rather than the fixed
+            layer so it scrolls with the page and runs its full height —
+            continuous, instead of restarting at every section boundary. */}
+        <Atmosphere />
+        <div className="relative z-10 flex min-h-screen flex-col bg-dotted">
           <Navbar />
           <main className="flex-1">{children}</main>
           <Footer />

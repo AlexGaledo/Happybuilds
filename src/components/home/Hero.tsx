@@ -61,27 +61,12 @@ export function Hero() {
   );
 
   return (
-    <div ref={root} className="relative overflow-hidden bg-dotted">
-      {/* Decorative floaters.
-          Two layers each: a wide, soft colour wash plus a smaller, brighter
-          core. The core is what the glow tween breathes, which reads as light
-          coming from inside the shape — a single flat circle fading in and out
-          just looks like it is switching off. */}
-      <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden>
-        <div className="blob-a absolute -left-24 top-10 h-72 w-72">
-          <div className="absolute inset-0 rounded-full bg-coral-400/25 blur-3xl" />
-          <div className="blob-core absolute inset-[26%] rounded-full bg-coral-500/35 blur-2xl" />
-        </div>
-        <div className="blob-b absolute -right-16 top-40 h-80 w-80">
-          <div className="absolute inset-0 rounded-full bg-amber-400/25 blur-3xl" />
-          <div className="blob-core absolute inset-[28%] rounded-full bg-amber-500/35 blur-2xl" />
-        </div>
-        <div className="blob-c absolute -bottom-16 left-1/3 h-64 w-64">
-          <div className="absolute inset-0 rounded-full bg-mint-500/18 blur-3xl" />
-          <div className="blob-core absolute inset-[30%] rounded-full bg-mint-500/28 blur-2xl" />
-        </div>
-      </div>
-
+    // No background of its own: the dotted texture and the drifting glow are
+    // owned by <Atmosphere /> in the marketing layout now, so they run the
+    // whole page instead of stopping at this element's bottom edge.
+    // `overflow-hidden` stays — the floating logo mark still needs clipping,
+    // and e2e/mobile.spec.ts asserts no horizontal overflow on any route.
+    <div ref={root} className="relative overflow-hidden">
       <Container className="grid items-center gap-12 py-20 sm:py-28 lg:grid-cols-12 lg:gap-8">
         <div className="lg:col-span-7">
           <div className="hero-sub mb-5 inline-flex items-center gap-2 rounded-full border border-border bg-surface/70 px-4 py-1.5 text-sm font-semibold text-navy-700 backdrop-blur">

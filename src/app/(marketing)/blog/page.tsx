@@ -38,7 +38,6 @@ export default function BlogPage() {
     <>
       {/* Intro / hero */}
       <Section className="relative overflow-hidden pb-12">
-        <div className="pointer-events-none absolute inset-0 -z-10 bg-dotted opacity-60" />
         <SectionHeading
           eyebrow="Blog"
           title="Notes from the workshop"

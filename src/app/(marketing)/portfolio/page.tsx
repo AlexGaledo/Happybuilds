@@ -58,7 +58,6 @@ export default function PortfolioPage() {
       {/* Intro / hero */}
       <Section className="relative overflow-hidden pb-12">
         {/* Subtle dotted backdrop, matched to the services page intro. */}
-        <div className="pointer-events-none absolute inset-0 -z-10 bg-dotted opacity-60" />
         <SectionHeading
           eyebrow="Work"
           title={hasWork ? "Builds we're proud of" : "Nothing here yet"}

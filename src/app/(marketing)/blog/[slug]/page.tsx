@@ -139,7 +139,6 @@ export default async function BlogPostPage({ params }: PageProps) {
 
       {/* Article header */}
       <Section className="relative overflow-hidden pb-8">
-        <div className="pointer-events-none absolute inset-0 -z-10 bg-dotted opacity-60" />
         <Reveal className="mx-auto max-w-3xl">
           <Link
             href="/blog"

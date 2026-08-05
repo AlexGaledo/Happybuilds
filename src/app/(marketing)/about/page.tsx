@@ -51,7 +51,6 @@ export default function AboutPage() {
     <>
       {/* Story */}
       <Section className="relative overflow-hidden pb-12">
-        <div className="pointer-events-none absolute inset-0 -z-10 bg-dotted opacity-60" />
         <SectionHeading
           eyebrow="About us"
           title="A small studio with a soft spot for hard problems"

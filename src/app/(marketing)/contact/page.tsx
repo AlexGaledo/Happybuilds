@@ -21,7 +21,6 @@ const whatHappensNext = [
 export default function ContactPage() {
   return (
     <Section className="relative overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-dotted opacity-60" />
 
       <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
         {/* Left: friendly intro + ways to reach us */}
