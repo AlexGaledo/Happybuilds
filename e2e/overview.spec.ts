@@ -51,24 +51,52 @@ test("renders the headline stats straight from /listings/stats", async ({ page }
   ).toBeVisible();
 });
 
+type Histogram = { hours: number; buckets: { count: number }[] };
+
 test("activity chart matches the histogram endpoint", async ({ page }) => {
-  const histogram = await apiJson<{ hours: number; buckets: { count: number }[] }>(
+  const histogram = await apiJson<Histogram>(
     api,
     "/listings/histogram?hours=48",
   );
-  const total = histogram.buckets.reduce((sum, b) => sum + b.count, 0);
+  const apiTotal = histogram.buckets.reduce((sum, b) => sum + b.count, 0);
+  const largestBucket = Math.max(...histogram.buckets.map((b) => b.count));
 
   await page.goto("/dashboard");
 
   const figure = page.locator("figure").first();
-  await expect(figure).toContainText(`${total} posts`);
   await expect(figure).toContainText("Posts per hour");
+  // One row per hour, gaps included. Assert before summing so a shape change
+  // fails here rather than as a confusing arithmetic mismatch below.
+  await expect(figure.locator("table tbody tr")).toHaveCount(48);
+
+  const rendered = Number(
+    ((await figure.textContent()) ?? "").match(/([\d,]+)\s+posts/)?.[1]
+      .replace(/,/g, ""),
+  );
+  expect(Number.isFinite(rendered)).toBe(true);
+
+  // The headline must equal the sum of the rows the page itself drew. This is
+  // the assertion with teeth — a UI that sums wrong, drops a bucket, or draws
+  // bars that disagree with its own accessible table fails here, and none of it
+  // depends on timing.
+  const tableTotal = await figure
+    .locator("table tbody tr td")
+    .evaluateAll((cells) =>
+      cells.reduce((sum, td) => sum + Number(td.textContent?.trim() || 0), 0),
+    );
+  expect(rendered).toBe(tableTotal);
+
+  // Against the API, tolerate one bucket. The window is `now() - 48h` bucketed
+  // hourly, so crossing an hour boundary drops a whole bucket (~50 rows) at
+  // once — and /listings/histogram is Redis-cached for 300s, so this test and
+  // the server component can legitimately straddle that rollover. Tight enough
+  // to catch a wrong endpoint or a wrong window, which miss by far more.
+  expect(Math.abs(rendered - apiTotal)).toBeLessThanOrEqual(largestBucket);
+
   // The accessible equivalent of the chart must exist, not just the SVG.
   await expect(figure.locator("table caption")).toContainText(
     "Job postings per hour",
   );
-  // One row per hour, gaps included.
-  await expect(figure.locator("table tbody tr")).toHaveCount(48);
 });
 
 test("top categories match /listings/facets and deep-link into the table", async ({
