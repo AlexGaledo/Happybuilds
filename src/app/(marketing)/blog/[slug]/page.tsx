@@ -8,6 +8,8 @@ import { Section } from "@/components/ui/Section";
 import { Badge } from "@/components/ui/Badge";
 import { Reveal } from "@/components/Reveal";
 import { CTASection } from "@/components/CTASection";
+import { JsonLd } from "@/components/JsonLd";
+import { blogPostingSchema, breadcrumbSchema } from "@/lib/structuredData";
 import { getAllSlugs, getPostBySlug } from "@/lib/blog";
 
 /**
@@ -42,6 +44,18 @@ export async function generateMetadata({
   return {
     title: post.frontmatter.title,
     description: post.frontmatter.description,
+    alternates: { canonical: `/blog/${slug}` },
+    // `article` rather than the site-wide `website`, so the published date and
+    // tags travel with the share instead of being dropped.
+    openGraph: {
+      type: "article",
+      title: post.frontmatter.title,
+      description: post.frontmatter.description,
+      url: `/blog/${slug}`,
+      publishedTime: post.frontmatter.date,
+      authors: [post.frontmatter.author],
+      tags: post.frontmatter.tags,
+    },
   };
 }
 
@@ -114,6 +128,15 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   return (
     <>
+      <JsonLd data={blogPostingSchema(slug, frontmatter)} />
+      <JsonLd
+        data={breadcrumbSchema([
+          { name: "Home", path: "" },
+          { name: "Blog", path: "/blog" },
+          { name: frontmatter.title, path: `/blog/${slug}` },
+        ])}
+      />
+
       {/* Article header */}
       <Section className="relative overflow-hidden pb-8">
         <div className="pointer-events-none absolute inset-0 -z-10 bg-dotted opacity-60" />

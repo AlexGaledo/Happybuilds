@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
 import { Hero } from "@/components/home/Hero";
@@ -12,11 +13,38 @@ import { Testimonials } from "@/components/Testimonials";
 import { CTASection } from "@/components/CTASection";
 import { caseStudies, process, services } from "@/lib/site";
 
-const stats = [
-  { value: "30+", label: "Projects shipped" },
-  { value: "10 hrs", label: "Saved weekly, on average" },
-  { value: "99", label: "Typical Lighthouse score" },
-  { value: "1 day", label: "Average reply time" },
+/**
+ * The "by the numbers" strip that used to sit here claimed 30+ projects
+ * shipped and 10 hrs saved weekly. None of that had happened. It is gone
+ * rather than softened — put it back when there are real numbers to put in it.
+ */
+
+/**
+ * Title and description are inherited from the root layout — the home page is
+ * what its defaults describe. Only the canonical is set here, so that
+ * www.fickles.tech and any tracking-parameter variants collapse onto one URL.
+ */
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
+
+/** What we can honestly promise before there is a track record to point at. */
+const firstClientOffer = [
+  {
+    title: "Founding-project pricing",
+    description:
+      "A genuinely discounted rate, because you're taking the risk on a studio with nothing to show yet. That cuts both ways and the price should say so.",
+  },
+  {
+    title: "You talk to the builder",
+    description:
+      "No account manager in the middle. The person writing your code is the person answering your questions, for as long as the project runs.",
+  },
+  {
+    title: "You keep everything",
+    description:
+      "Source, docs, and deploy access are yours from day one — not held hostage as leverage. If we're not a fit, you walk away with the work.",
+  },
 ];
 
 export default function HomePage() {
@@ -24,22 +52,8 @@ export default function HomePage() {
     <>
       <Hero />
 
-      {/* Stats */}
-      <Section className="py-12 sm:py-16">
-        <RevealGroup className="grid grid-cols-2 gap-6 lg:grid-cols-4">
-          {stats.map((s) => (
-            <Reveal key={s.label} className="text-center">
-              <p className="font-display text-3xl font-extrabold text-coral-ink sm:text-4xl">
-                {s.value}
-              </p>
-              <p className="mt-1 text-sm text-muted">{s.label}</p>
-            </Reveal>
-          ))}
-        </RevealGroup>
-      </Section>
-
       {/* Services preview */}
-      <Section className="pt-8">
+      <Section className="pt-16 sm:pt-20">
         <SectionHeading
           eyebrow="What we do"
           title="One friendly team, four ways to help"
@@ -100,48 +114,85 @@ export default function HomePage() {
         </Container>
       </Section>
 
-      {/* Portfolio teaser */}
+      {/* Portfolio teaser.
+          `caseStudies` is empty until the first client build ships, so this
+          says so plainly. Adding the first real entry flips it back to the
+          case-study grid with no code change here. */}
       <Section>
-        <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
-          <SectionHeading
-            align="left"
-            eyebrow="Recent work"
-            title="Builds we're proud of"
-            description="A few problems we've helped solve lately."
-            className="text-left"
-          />
-          <Button href="/portfolio" variant="outline" size="sm">
-            View all work <ArrowRight size={16} />
-          </Button>
-        </div>
-        <RevealGroup className="mt-12 grid gap-6 md:grid-cols-2">
-          {caseStudies.slice(0, 2).map((cs) => (
-            <Reveal key={cs.slug}>
-              <Link href={`/portfolio/${cs.slug}`} className="group block">
-                <Card interactive className="h-full">
-                  <div className="flex items-center justify-between">
-                    <Badge tone={cs.accent}>{cs.category}</Badge>
-                    <span className="text-sm text-muted">{cs.year}</span>
-                  </div>
-                  <h3 className="mt-4 text-2xl font-bold transition-colors group-hover:text-coral-ink">
-                    {cs.title}
-                  </h3>
-                  <p className="mt-2 leading-relaxed text-muted">{cs.summary}</p>
-                  <div className="mt-6 flex flex-wrap gap-6">
-                    {cs.metrics.map((m) => (
-                      <div key={m.label}>
-                        <p className="font-display text-xl font-extrabold text-navy-800">
-                          {m.value}
-                        </p>
-                        <p className="text-xs text-muted">{m.label}</p>
+        {caseStudies.length > 0 ? (
+          <>
+            <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
+              <SectionHeading
+                align="left"
+                eyebrow="Recent work"
+                title="Builds we're proud of"
+                description="A few problems we've helped solve lately."
+                className="text-left"
+              />
+              <Button href="/portfolio" variant="outline" size="sm">
+                View all work <ArrowRight size={16} />
+              </Button>
+            </div>
+            <RevealGroup className="mt-12 grid gap-6 md:grid-cols-2">
+              {caseStudies.slice(0, 2).map((cs) => (
+                <Reveal key={cs.slug}>
+                  <Link href={`/portfolio/${cs.slug}`} className="group block">
+                    <Card interactive className="h-full">
+                      <div className="flex items-center justify-between">
+                        <Badge tone={cs.accent}>{cs.category}</Badge>
+                        <span className="text-sm text-muted">{cs.year}</span>
                       </div>
-                    ))}
-                  </div>
-                </Card>
-              </Link>
+                      <h3 className="mt-4 text-2xl font-bold transition-colors group-hover:text-coral-ink">
+                        {cs.title}
+                      </h3>
+                      <p className="mt-2 leading-relaxed text-muted">
+                        {cs.summary}
+                      </p>
+                      <div className="mt-6 flex flex-wrap gap-6">
+                        {cs.metrics.map((m) => (
+                          <div key={m.label}>
+                            <p className="font-display text-xl font-extrabold text-navy-800">
+                              {m.value}
+                            </p>
+                            <p className="text-xs text-muted">{m.label}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </Card>
+                  </Link>
+                </Reveal>
+              ))}
+            </RevealGroup>
+          </>
+        ) : (
+          <>
+            <SectionHeading
+              eyebrow="Recent work"
+              title="We're looking for our first"
+              description="Fickles is new. We haven't shipped a client build yet, and we'd rather tell you that than invent a case study. Here's what the first few teams get instead."
+            />
+            <RevealGroup className="mt-14 grid gap-6 md:grid-cols-3">
+              {firstClientOffer.map((item) => (
+                <Reveal key={item.title}>
+                  <Card className="h-full">
+                    <h3 className="text-xl font-bold">{item.title}</h3>
+                    <p className="mt-3 leading-relaxed text-muted">
+                      {item.description}
+                    </p>
+                  </Card>
+                </Reveal>
+              ))}
+            </RevealGroup>
+            <Reveal className="mt-12 flex flex-wrap items-center justify-center gap-4">
+              <Button href="/contact" size="lg">
+                Be our first <ArrowRight size={18} />
+              </Button>
+              <Button href="/blog" variant="outline" size="lg">
+                Read how we think
+              </Button>
             </Reveal>
-          ))}
-        </RevealGroup>
+          </>
+        )}
       </Section>
 
       {/* Why us / guarantee strip */}

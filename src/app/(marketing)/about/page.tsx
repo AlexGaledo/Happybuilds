@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Section, SectionHeading } from "@/components/ui/Section";
-import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
 import { Reveal, RevealGroup } from "@/components/Reveal";
 import { CTASection } from "@/components/CTASection";
@@ -10,15 +9,8 @@ export const metadata: Metadata = {
   title: "About",
   description:
     "Fickles is a small, friendly software studio shipping automations, internal tools, websites, and custom software for teams that want to move faster without the headache.",
+  alternates: { canonical: "/about" },
 };
-
-/** "By the numbers" strip — small, friendly proof points. */
-const stats = [
-  { value: "30+", label: "Projects shipped" },
-  { value: "10 hrs", label: "Saved weekly, on average" },
-  { value: "99", label: "Typical Lighthouse score" },
-  { value: "1 day", label: "Average reply time" },
-];
 
 /**
  * Placeholder team members. Avatars are styled initials (no external images)
@@ -107,26 +99,9 @@ export default function AboutPage() {
         </RevealGroup>
       </Section>
 
-      {/* By the numbers */}
-      <Section className="bg-navy-800 text-white" contained={false}>
-        <Container>
-          <SectionHeading
-            eyebrow="By the numbers"
-            title="Small team, real impact"
-            className="[&_h2]:text-white [&_p]:text-navy-100"
-          />
-          <RevealGroup className="mt-14 grid grid-cols-2 gap-6 lg:grid-cols-4">
-            {stats.map((stat) => (
-              <Reveal key={stat.label} className="text-center">
-                <p className="font-display text-4xl font-extrabold text-amber-400">
-                  {stat.value}
-                </p>
-                <p className="mt-1 text-sm text-navy-100">{stat.label}</p>
-              </Reveal>
-            ))}
-          </RevealGroup>
-        </Container>
-      </Section>
+      {/* The "By the numbers" strip that sat here repeated the home page's
+          invented stats (30+ projects, 10 hrs saved weekly). Removed with
+          them — restore it when there is something real to count. */}
 
       {/* Team */}
       <Section>

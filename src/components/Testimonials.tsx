@@ -5,6 +5,13 @@ import { Section, SectionHeading } from "@/components/ui/Section";
 import { testimonials } from "@/lib/site";
 
 export function Testimonials() {
+  // No real quotes yet. Render nothing rather than a heading over an empty
+  // grid — and rather than the invented ones this used to ship with. The
+  // section reappears on its own the moment `testimonials` has an entry.
+  if (testimonials.length === 0) {
+    return null;
+  }
+
   return (
     <Section>
       <SectionHeading

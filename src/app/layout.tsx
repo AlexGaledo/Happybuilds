@@ -23,14 +23,10 @@ export const metadata: Metadata = {
     template: `%s · ${site.name}`,
   },
   description: site.description,
-  keywords: [
-    "software agency",
-    "automation",
-    "internal tools",
-    "web development",
-    "landing pages",
-    "custom software",
-  ],
+  // No `keywords`: Google stopped reading the meta keywords tag in 2009 and
+  // nothing else consumes it. Canonicals are set per route rather than here —
+  // a canonical on the root layout is inherited by every page that does not
+  // override it, which would point the whole site at "/".
   openGraph: {
     type: "website",
     url: site.url,

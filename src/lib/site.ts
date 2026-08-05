@@ -106,96 +106,14 @@ export interface CaseStudy {
   stack: string[];
 }
 
-export const caseStudies: CaseStudy[] = [
-  {
-    slug: "logiflow-shipment-automation",
-    client: "LogiFlow Logistics",
-    title: "Automating the daily shipment report",
-    summary:
-      "Turned a 2-hour manual spreadsheet ritual into a one-click, scheduled report.",
-    category: "Automation",
-    year: "2026",
-    accent: "coral",
-    metrics: [
-      { label: "Time saved / week", value: "10 hrs" },
-      { label: "Manual errors", value: "−98%" },
-      { label: "Setup time", value: "3 wks" },
-    ],
-    challenge:
-      "Ops staff stitched together five spreadsheets every morning to produce a shipment summary — slow, error-prone, and dreaded.",
-    solution:
-      "We built a pipeline that pulls from their carrier APIs and warehouse DB, validates the data, and emails a formatted report on a schedule.",
-    result:
-      "The report now runs itself before the team logs in, freeing roughly ten hours a week and eliminating copy-paste mistakes.",
-    stack: ["Python", "FastAPI", "Supabase", "Cron"],
-  },
-  {
-    slug: "northwind-intake-dashboard",
-    client: "Northwind Clinic",
-    title: "A calmer patient-intake dashboard",
-    summary:
-      "Replaced paper forms and a clunky tool with a friendly staff dashboard.",
-    category: "Internal tool",
-    year: "2026",
-    accent: "mint",
-    metrics: [
-      { label: "Intake time", value: "−40%" },
-      { label: "Staff onboarding", value: "1 day" },
-      { label: "Satisfaction", value: "4.8/5" },
-    ],
-    challenge:
-      "Front-desk staff juggled paper forms and a confusing legacy system, creating long wait times and data gaps.",
-    solution:
-      "A clean, role-based intake dashboard with validation, search, and printable summaries — designed around the staff's real workflow.",
-    result:
-      "Intake is now 40% faster and new staff are productive on day one.",
-    stack: ["Next.js", "TypeScript", "Supabase", "Tailwind"],
-  },
-  {
-    slug: "brightcafe-landing-page",
-    client: "Bright Cafe",
-    title: "A landing page that fills tables",
-    summary:
-      "A warm, fast landing page with online reservations baked in.",
-    category: "Website",
-    year: "2026",
-    accent: "amber",
-    metrics: [
-      { label: "Reservations", value: "+62%" },
-      { label: "Lighthouse", value: "99" },
-      { label: "Launch", value: "2 wks" },
-    ],
-    challenge:
-      "A beloved local cafe had no web presence and lost bookings to competitors with online reservations.",
-    solution:
-      "A cheerful, mobile-first landing page with menu highlights and an embedded reservation flow — easy for the owner to update.",
-    result:
-      "Online reservations climbed 62% in the first two months after launch.",
-    stack: ["Next.js", "Tailwind", "Motion"],
-  },
-  {
-    slug: "acme-ops-platform",
-    client: "Acme Tools",
-    title: "An ops platform for a growing team",
-    summary:
-      "A custom web app replacing a tangle of spreadsheets and apps.",
-    category: "Custom software",
-    year: "2025",
-    accent: "navy",
-    metrics: [
-      { label: "Tools replaced", value: "6" },
-      { label: "Adoption", value: "100%" },
-      { label: "Phase 1", value: "8 wks" },
-    ],
-    challenge:
-      "Rapid growth left Acme's operations spread across six disconnected tools, with no single source of truth.",
-    solution:
-      "A unified operations platform with inventory, orders, and reporting — built to grow with them and integrate their existing stack.",
-    result:
-      "The whole team moved onto one tool, with clean data and room to scale.",
-    stack: ["Next.js", "FastAPI", "PostgreSQL", "Supabase"],
-  },
-];
+/**
+ * Empty until the first client build ships.
+ *
+ * Both the home page and /portfolio read this array and switch to an honest
+ * "first slot is open" state while it is empty, so landing the first real
+ * entry here is all it takes to turn those surfaces back on.
+ */
+export const caseStudies: CaseStudy[] = [];
 
 export interface Testimonial {
   quote: string;
@@ -203,26 +121,14 @@ export interface Testimonial {
   role: string;
 }
 
-export const testimonials: Testimonial[] = [
-  {
-    quote:
-      "Fickles took something we dreaded every morning and just… made it disappear. The team is sharp and genuinely pleasant to work with.",
-    name: "Devon Lee",
-    role: "Operations Lead, LogiFlow",
-  },
-  {
-    quote:
-      "Our new dashboard feels like it was made for us — because it was. Onboarding new staff went from a week to an afternoon.",
-    name: "Aisha Khan",
-    role: "Clinic Manager, Northwind",
-  },
-  {
-    quote:
-      "Fast, friendly, and the site looks fantastic. Reservations are up and I can update it myself.",
-    name: "Maria Santos",
-    role: "Owner, Bright Cafe",
-  },
-];
+/**
+ * Empty until a real client says something on the record.
+ *
+ * <Testimonials /> renders nothing at all while this is empty rather than
+ * showing filler: invented quotes attributed to invented people are the one
+ * thing on a marketing page that is worth nothing and costs everything.
+ */
+export const testimonials: Testimonial[] = [];
 
 export interface Step {
   title: string;

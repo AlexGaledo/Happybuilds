@@ -15,10 +15,41 @@ import { caseStudies } from "@/lib/site";
  * the "portfolio teaser" on the home page so the two stay visually consistent.
  */
 
+const hasWork = caseStudies.length > 0;
+
+/**
+ * Shown while there is no client work. These describe how a first project
+ * would run — capability and terms, never a claim that any of it has happened.
+ */
+const approach = [
+  {
+    title: "We scope it before you commit",
+    description:
+      "First conversation is about whether the thing is worth building at all. If buying something off the shelf is the better answer, we'll say so and you'll have lost an hour, not a budget.",
+  },
+  {
+    title: "You see it working every week",
+    description:
+      "Progress arrives as something you can click, not a status update. Small visible steps mean a wrong turn costs a week, never a quarter.",
+  },
+  {
+    title: "Fixed price, written down",
+    description:
+      "Scope and price agreed up front. If the scope changes we re-quote in the open — no surprise line items at the end of a build.",
+  },
+  {
+    title: "It's yours, including the keys",
+    description:
+      "Repository, documentation, and deploy access handed over as we go. Nothing about the arrangement depends on you being unable to leave.",
+  },
+];
+
 export const metadata: Metadata = {
   title: "Work",
-  description:
-    "A look at recent builds from Fickles — automations, internal tools, websites, and custom software that made everyday work feel lighter.",
+  description: hasWork
+    ? "A look at recent builds from Fickles — automations, internal tools, websites, and custom software that made everyday work feel lighter."
+    : "Fickles is a new studio and hasn't shipped a client build yet. Here's how we'd approach yours, and what the first few clients get for taking the chance.",
+  alternates: { canonical: "/portfolio" },
 };
 
 export default function PortfolioPage() {
@@ -30,12 +61,60 @@ export default function PortfolioPage() {
         <div className="pointer-events-none absolute inset-0 -z-10 bg-dotted opacity-60" />
         <SectionHeading
           eyebrow="Work"
-          title="Builds we're proud of"
-          description="Real problems, right-sized solutions. Here are a few of the things we've helped teams ship lately."
+          title={hasWork ? "Builds we're proud of" : "Nothing here yet"}
+          description={
+            hasWork
+              ? "Real problems, right-sized solutions. Here are a few of the things we've helped teams ship lately."
+              : "We're a new studio, and no client build has shipped yet. This page will fill up with real work and real numbers — until then it stays empty rather than borrowing someone else's."
+          }
         />
       </Section>
 
+      {/* No client work yet: say how we'd approach the first one instead. */}
+      {!hasWork && (
+        <>
+          <Section className="pt-4">
+            <RevealGroup className="grid gap-6 md:grid-cols-2">
+              {approach.map((item) => (
+                <Reveal key={item.title}>
+                  <Card className="flex h-full flex-col">
+                    <h2 className="text-xl font-bold">{item.title}</h2>
+                    <p className="mt-3 flex-1 leading-relaxed text-muted">
+                      {item.description}
+                    </p>
+                  </Card>
+                </Reveal>
+              ))}
+            </RevealGroup>
+          </Section>
+
+          <Section className="pt-0">
+            <Reveal>
+              <Card className="bg-amber-500/8 text-center">
+                <h2 className="text-2xl font-bold">
+                  Want to be the first case study?
+                </h2>
+                <p className="mx-auto mt-3 max-w-xl leading-relaxed text-muted">
+                  Founding-project pricing, direct access to the person building
+                  it, and you keep the source and deploy access whatever
+                  happens next.
+                </p>
+                <p className="mt-6">
+                  <Link
+                    href="/contact"
+                    className="font-semibold text-coral-ink underline underline-offset-4"
+                  >
+                    Tell us what you need
+                  </Link>
+                </p>
+              </Card>
+            </Reveal>
+          </Section>
+        </>
+      )}
+
       {/* Case-study grid */}
+      {hasWork && (
       <Section className="pt-4">
         <RevealGroup className="grid gap-6 md:grid-cols-2">
           {caseStudies.map((caseStudy) => (
@@ -76,6 +155,7 @@ export default function PortfolioPage() {
           ))}
         </RevealGroup>
       </Section>
+      )}
 
       <CTASection />
     </>

@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   title: "Contact",
   description:
     "Tell us what's slowing you down. Fickles replies within one business day with honest next steps — no pressure, no jargon.",
+  alternates: { canonical: "/contact" },
 };
 
 /** What happens after someone hits "Send" — sets expectations up front. */

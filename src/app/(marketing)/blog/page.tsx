@@ -20,6 +20,7 @@ export const metadata: Metadata = {
   title: "Blog",
   description:
     "Friendly, practical notes on automation, internal tools, and building software that makes work feel lighter — from the Fickles team.",
+  alternates: { canonical: "/blog" },
 };
 
 // Build one formatter and reuse it for every post. Intl avoids pulling in a date

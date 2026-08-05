@@ -33,9 +33,28 @@ export function Hero() {
           repeat: -1,
           yoyo: true,
         });
-        // Parallax drift on the decorative blobs.
-        gsap.to(".blob-a", { x: 30, y: -20, duration: 6, ease: "sine.inOut", repeat: -1, yoyo: true });
-        gsap.to(".blob-b", { x: -24, y: 24, duration: 7, ease: "sine.inOut", repeat: -1, yoyo: true });
+
+        // Drift on the decorative floaters. The durations are deliberately
+        // non-harmonic (9 / 11 / 13) so the three never settle into a visible
+        // shared rhythm — with matching durations the whole backdrop starts to
+        // look like one object sliding around.
+        gsap.to(".blob-a", { x: 34, y: -26, scale: 1.06, duration: 9, ease: "sine.inOut", repeat: -1, yoyo: true });
+        gsap.to(".blob-b", { x: -28, y: 30, scale: 1.08, duration: 11, ease: "sine.inOut", repeat: -1, yoyo: true });
+        gsap.to(".blob-c", { x: 22, y: 26, scale: 1.05, duration: 13, ease: "sine.inOut", repeat: -1, yoyo: true });
+
+        // The glow itself: each floater's bright core breathes on a shorter
+        // cycle than its drift, staggered so they peak at different moments.
+        // Animating opacity + scale rather than `filter` keeps this on the
+        // compositor — a blur-radius tween would repaint every frame.
+        gsap.to(".blob-core", {
+          opacity: 0.38,
+          scale: 0.88,
+          duration: 4.5,
+          ease: "sine.inOut",
+          repeat: -1,
+          yoyo: true,
+          stagger: 1.6,
+        });
       }
     },
     { scope: root },
@@ -43,10 +62,24 @@ export function Hero() {
 
   return (
     <div ref={root} className="relative overflow-hidden bg-dotted">
-      {/* Decorative blobs */}
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="blob-a absolute -left-24 top-10 h-72 w-72 rounded-full bg-coral-400/25 blur-3xl" />
-        <div className="blob-b absolute -right-16 top-40 h-80 w-80 rounded-full bg-amber-400/25 blur-3xl" />
+      {/* Decorative floaters.
+          Two layers each: a wide, soft colour wash plus a smaller, brighter
+          core. The core is what the glow tween breathes, which reads as light
+          coming from inside the shape — a single flat circle fading in and out
+          just looks like it is switching off. */}
+      <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden>
+        <div className="blob-a absolute -left-24 top-10 h-72 w-72">
+          <div className="absolute inset-0 rounded-full bg-coral-400/25 blur-3xl" />
+          <div className="blob-core absolute inset-[26%] rounded-full bg-coral-500/35 blur-2xl" />
+        </div>
+        <div className="blob-b absolute -right-16 top-40 h-80 w-80">
+          <div className="absolute inset-0 rounded-full bg-amber-400/25 blur-3xl" />
+          <div className="blob-core absolute inset-[28%] rounded-full bg-amber-500/35 blur-2xl" />
+        </div>
+        <div className="blob-c absolute -bottom-16 left-1/3 h-64 w-64">
+          <div className="absolute inset-0 rounded-full bg-mint-500/18 blur-3xl" />
+          <div className="blob-core absolute inset-[30%] rounded-full bg-mint-500/28 blur-2xl" />
+        </div>
       </div>
 
       <Container className="grid items-center gap-12 py-20 sm:py-28 lg:grid-cols-12 lg:gap-8">

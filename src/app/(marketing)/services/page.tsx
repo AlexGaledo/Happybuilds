@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   title: "Services",
   description:
     "From tiny automations to full custom platforms, Fickles right-sizes the solution to the problem in front of you — automation, internal tools, websites, and custom software.",
+  alternates: { canonical: "/services" },
 };
 
 export default function ServicesPage() {
