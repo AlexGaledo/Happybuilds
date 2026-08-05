@@ -272,6 +272,17 @@ export interface Draft {
   updated_at: string;
   sent_at: string | null;
   reply_count: number;
+
+  /**
+   * A bounced draft keeps `status: "sent"` — it *was* sent, the far end refused
+   * it. That is a different problem from `failed`, which never left the host.
+   */
+  bounced_at: string | null;
+  /** "hard" (permanent — stop mailing this address) or "soft" (transient). */
+  bounce_kind: string | null;
+  /** RFC 3463 status, e.g. "5.1.1". */
+  bounce_code: string | null;
+  bounce_detail: string | null;
 }
 
 export interface DraftListResponse {
@@ -288,6 +299,38 @@ export interface DraftCounts {
   failed: number;
   inbox: number;
   replies: number;
+  /** Sent, then rejected by the receiving server — distinct from `failed`. */
+  bounced: number;
+}
+
+export interface BounceRow {
+  draft_id: string;
+  recipient_email: string | null;
+  subject: string;
+  kind: string | null;
+  code: string | null;
+  detail: string | null;
+  bounced_at: string | null;
+  sent_at: string | null;
+}
+
+export interface BounceStats {
+  window_days: number;
+  /** Denominator: messages *sent* in the window. A draft that never went out
+   * cannot bounce, so counting it would dilute the rate exactly when the
+   * outbox is full. */
+  sent: number;
+  bounced: number;
+  hard: number;
+  soft: number;
+  /** Percentages, or null when nothing was sent — "nothing bounced" and
+   * "nothing was sent" must not both render as 0%. */
+  rate: number | null;
+  hard_rate: number | null;
+  /** SMTP-time rejections: never left this host. Reported beside the bounce
+   * rate, never inside it. */
+  send_failures: number;
+  recent: BounceRow[];
 }
 
 export interface MailboxStatus {

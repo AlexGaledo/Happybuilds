@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import {
+  getBounceStats,
   getDraftCounts,
   getDrafts,
   getMailboxStatus,
   getReplies,
   safe,
 } from "@/lib/dashboard/server";
+import { BouncePanel } from "@/components/dashboard/BouncePanel";
 import { DraftsBoard } from "@/components/dashboard/DraftsBoard";
 import { ErrorState, PageHeader } from "@/components/dashboard/primitives";
 
@@ -19,12 +21,13 @@ export const dynamic = "force-dynamic";
  * you sent it from, rather than vanishing the instant it succeeds.
  */
 export default async function DraftsPage() {
-  const [replies, outbox, manual, counts, mailbox] = await Promise.all([
+  const [replies, outbox, manual, counts, mailbox, bounces] = await Promise.all([
     safe(getReplies({ limit: 50 })),
     safe(getDrafts({ channel: "email", include_sent: true, limit: 50 })),
     safe(getDrafts({ channel: "manual", include_sent: true, limit: 50 })),
     safe(getDraftCounts()),
     safe(getMailboxStatus()),
+    safe(getBounceStats(30)),
   ]);
 
   if (outbox.error && manual.error && replies.error) {
@@ -47,13 +50,19 @@ export default async function DraftsPage() {
         description="Messages the agent wrote, and what came back. Drafts with a contact address send from the configured mailbox; the rest carry a link to the original post so you can send them yourself."
       />
 
-      <DraftsBoard
-        replies={replies.data?.items ?? []}
-        outbox={outbox.data?.items ?? []}
-        manual={manual.data?.items ?? []}
-        counts={counts.data}
-        mailbox={mailbox.data}
-      />
+      <div className="flex flex-col gap-6">
+        <DraftsBoard
+          replies={replies.data?.items ?? []}
+          outbox={outbox.data?.items ?? []}
+          manual={manual.data?.items ?? []}
+          counts={counts.data}
+          mailbox={mailbox.data}
+        />
+
+        {/* Below the board, not above it: the board is what you act on, and a
+            deliverability number you cannot act on shouldn't outrank it. */}
+        <BouncePanel stats={bounces.data} />
+      </div>
     </>
   );
 }

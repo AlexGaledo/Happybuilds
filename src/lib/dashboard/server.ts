@@ -2,6 +2,7 @@ import "server-only";
 
 import type {
   DashboardConfig,
+  BounceStats,
   DraftCounts,
   DraftListResponse,
   GeneratedTemplate,
@@ -305,6 +306,10 @@ export function getDraftCounts(): Promise<DraftCounts> {
 
 export function getMailboxStatus(): Promise<MailboxStatus> {
   return apiGet<MailboxStatus>("/drafts/mailbox");
+}
+
+export function getBounceStats(days = 30): Promise<BounceStats> {
+  return apiGet<BounceStats>("/drafts/bounces", { days });
 }
 
 export function sendDrafts(draftIds: string[]) {
