@@ -501,3 +501,118 @@ export interface SpecialInstruction {
   chars: number;
   max_chars: number;
 }
+
+// ----------------------------------------------------------- keyword prefilter
+
+/**
+ * Keyword prefilter — the free stage in front of the drafting agent.
+ *
+ * The scraper brings in ~1030 posts a day and roughly two thirds are rejected
+ * by the agent as not a fit, each one costing a full agent turn to reach that
+ * conclusion. Matching a keyword list costs nothing, so the obvious rejects are
+ * killed before a turn is spent.
+ *
+ * Matching is against the post's title, category and job type only — never the
+ * description. A word that appears once in a paragraph of prose says nothing
+ * about what the job is.
+ *
+ * `keep_keywords` wins. A post matching both lists is KEPT and goes to the
+ * agent. That precedence is the whole safety valve: a broad reject rule stays
+ * usable because a narrow keep rule can carve back out of it.
+ */
+export interface PrefilterConfig {
+  enabled: boolean;
+  reject_keywords: string[];
+  /** Override list. Beats `reject_keywords` on a post that matches both. */
+  keep_keywords: string[];
+  /** True while the stored lists are still the ones shipped in code. */
+  is_default: boolean;
+}
+
+/** Write shape. `is_default` is derived by the backend, never sent. */
+export interface PrefilterConfigUpdate {
+  enabled: boolean;
+  reject_keywords: string[];
+  keep_keywords: string[];
+}
+
+/** "reject" and "keep" both mean a rule fired; "pass" means none did. */
+export type PrefilterVerdict = "reject" | "keep" | "pass";
+
+/** One post, the verdict the keywords give it, and the words that decided it. */
+export interface PrefilterVerdictSample {
+  kind: string;
+  id: string;
+  title: string;
+  verdict: PrefilterVerdict;
+  /** The keywords that matched. Empty on a "pass". */
+  matched: string[];
+}
+
+/**
+ * Result of replaying a keyword list over posts the agent has already judged.
+ * Writes nothing.
+ *
+ * `false_kills` is the only number that decides whether this is safe to turn
+ * on: posts the agent judged QUALIFIED that these keywords would have thrown
+ * away. Zero is the bar. `true_kills` — rejects the keywords would have caught
+ * for free — is the payoff, but it is worthless if the cost is a lost lead,
+ * because a prefiltered post never reaches the agent and has no retry path.
+ */
+export interface PrefilterDryRun {
+  scanned: number;
+  would_reject: number;
+  would_pass: number;
+  /** Of those scanned, how many the agent has already ruled on. The
+   * denominator for both kill counts — the rest have no verdict to compare. */
+  judged: number;
+  false_kills: number;
+  true_kills: number;
+  /** Every false kill worth showing, so the offending keyword is nameable. */
+  false_kill_samples: PrefilterVerdictSample[];
+  /** A general spread of verdicts, for sanity-checking the rules. */
+  samples: PrefilterVerdictSample[];
+  /** True when the report graded the lists sent in the request rather than the
+   * saved ones. The panel always sends its edit boxes, so this reads true in
+   * the dashboard and false for a CLI dry run. */
+  used_override: boolean;
+}
+
+// -------------------------------------------------- automatic lead processing
+
+/**
+ * Scheduled drafting — the cron that spends agent time on its own.
+ *
+ * What this governs is budget, not outbound mail. A scheduled run drafts and
+ * files the result in the outbox at status `ready`; nothing is sent until the
+ * Drafts tab sends it. Enabling therefore costs money and no messages.
+ *
+ * The cost is real: ~640 leads a day survive the keyword prefilter, a batch of
+ * ten takes 3–6 minutes of `claude -p`, and that time is billed to the
+ * operator's own Claude subscription rather than to a metered API key with a
+ * spend ceiling. `daily_cap` is the ceiling, and it is enforced against rows
+ * drafted rather than runs fired — which is why `processed_last_24h` includes
+ * batches started by hand from the Pipeline tab.
+ */
+export interface AutoProcessConfig {
+  enabled: boolean;
+  /** Leads handed to the agent per scheduled run. 1..50. */
+  batch_size: number;
+  /** Ceiling on leads drafted in a rolling 24 hours. 1..1000. */
+  daily_cap: number;
+  /** Observed from the rows, not from a run counter — manual batches count. */
+  processed_last_24h: number;
+  remaining_today: number;
+  /**
+   * Optional: the backend may not be able to report this, in which case the
+   * field is absent rather than null. Render it only when present.
+   */
+  last_run_at?: string | null;
+}
+
+/** Write shape. The three observed fields are derived, never sent. */
+export interface AutoProcessConfigUpdate {
+  enabled: boolean;
+  batch_size: number;
+  daily_cap: number;
+}

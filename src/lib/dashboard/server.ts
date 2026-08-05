@@ -1,6 +1,8 @@
 import "server-only";
 
 import type {
+  AutoProcessConfig,
+  AutoProcessConfigUpdate,
   DashboardConfig,
   BounceStats,
   DraftCounts,
@@ -17,6 +19,9 @@ import type {
   MailboxStatus,
   PipelineCounts,
   PipelineListResponse,
+  PrefilterConfig,
+  PrefilterConfigUpdate,
+  PrefilterDryRun,
   ProcessStatus,
   ReplyListResponse,
   ScrapeStatus,
@@ -400,6 +405,62 @@ export function saveInstruction(payload: {
   applies_to_drafting: boolean;
 }): Promise<SpecialInstruction> {
   return apiSend<SpecialInstruction>("/config/instruction", {
+    method: "PUT",
+    body: payload,
+  });
+}
+
+// ---------------------------------------------------------- keyword prefilter
+
+export function getPrefilter(): Promise<PrefilterConfig> {
+  return apiGet<PrefilterConfig>("/config/prefilter");
+}
+
+export function savePrefilter(
+  payload: PrefilterConfigUpdate,
+): Promise<PrefilterConfig> {
+  return apiSend<PrefilterConfig>("/config/prefilter", {
+    method: "PUT",
+    body: payload,
+  });
+}
+
+/** Discard the operator's lists and restore the ones shipped in code. */
+export function resetPrefilter(): Promise<PrefilterConfig> {
+  return apiSend<PrefilterConfig>("/config/prefilter/reset", { body: {} });
+}
+
+/**
+ * Replay a keyword list over already-judged posts. Persists nothing.
+ *
+ * The candidate lists are sent in the body rather than read from storage, so
+ * the operator can test an edit before committing to it — the entire point of
+ * a dry run is to answer "is this safe to save", and a version that could only
+ * grade the saved config would have to be run after the damage was done.
+ */
+export function dryRunPrefilter(
+  payload: PrefilterConfigUpdate,
+): Promise<PrefilterDryRun> {
+  return apiSend<PrefilterDryRun>("/config/prefilter/dry-run", { body: payload });
+}
+
+// -------------------------------------------------- automatic lead processing
+
+/**
+ * Read the schedule and the budget spent against it.
+ *
+ * The counts come back observed from the rows rather than from a run counter,
+ * so this is a live figure and must not be cached — `apiGet` is already
+ * `no-store`, which is the whole reason it is used here.
+ */
+export function getAutoProcess(): Promise<AutoProcessConfig> {
+  return apiGet<AutoProcessConfig>("/config/autoprocess");
+}
+
+export function saveAutoProcess(
+  payload: AutoProcessConfigUpdate,
+): Promise<AutoProcessConfig> {
+  return apiSend<AutoProcessConfig>("/config/autoprocess", {
     method: "PUT",
     body: payload,
   });

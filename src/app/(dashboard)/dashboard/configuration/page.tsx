@@ -2,20 +2,32 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   Bot,
+  CalendarClock,
   CheckCircle2,
   CircleAlert,
+  CirclePause,
   Filter,
   Mail,
   Terminal,
   TriangleAlert,
 } from "lucide-react";
-import { getConfig, getInstruction, safe } from "@/lib/dashboard/server";
+import {
+  getAutoProcess,
+  getConfig,
+  getInstruction,
+  getPrefilter,
+  safe,
+} from "@/lib/dashboard/server";
 import type {
+  AutoProcessConfig,
   CheckStatus,
   DashboardConfig,
+  PrefilterConfig,
   SpecialInstruction,
 } from "@/lib/dashboard/types";
+import { AutoProcessPanel } from "@/components/dashboard/AutoProcessPanel";
 import { InstructionPanel } from "@/components/dashboard/InstructionPanel";
+import { PrefilterPanel } from "@/components/dashboard/PrefilterPanel";
 import {
   Chip,
   ErrorState,
@@ -39,9 +51,11 @@ export const dynamic = "force-dynamic";
  * No secrets: the backend reports credentials as booleans and masked tails.
  */
 export default async function ConfigurationPage() {
-  const [config, instruction] = await Promise.all([
+  const [config, instruction, prefilter, autoProcess] = await Promise.all([
     safe(getConfig()),
     safe(getInstruction()),
+    safe(getPrefilter()),
+    safe(getAutoProcess()),
   ]);
 
   if (config.error || !config.data) {
@@ -70,6 +84,8 @@ export default async function ConfigurationPage() {
       <div className="flex flex-col gap-6">
         <StatusPanel checks={data.checks} blocking={blocking.length} />
         <InstructionSection instruction={instruction.data} error={instruction.error} />
+        <PrefilterSection prefilter={prefilter.data} error={prefilter.error} />
+        <AutoProcessSection config={autoProcess.data} error={autoProcess.error} />
         <HowItWorks transport={data.mail.transport} />
         <SettingsPanel data={data} />
         <SetupPanel transport={data.mail.transport} />
@@ -254,6 +270,117 @@ function InstructionSection({
   );
 }
 
+/**
+ * The stage that runs *before* step 1 below.
+ *
+ * Sits beside the special instruction because both are writable and both change
+ * what the agent does — but this one changes what the agent ever sees, which is
+ * the more consequential of the two.
+ */
+function PrefilterSection({
+  prefilter,
+  error,
+}: {
+  prefilter: PrefilterConfig | null;
+  error: string | null;
+}) {
+  return (
+    <Panel>
+      <PanelHeader
+        title="Keyword prefilter"
+        description="Kills the obvious rejects before they cost an agent turn. Runs ahead of step 1 below."
+        action={
+          prefilter ? (
+            prefilter.enabled ? (
+              <Chip tone="amber" icon={Filter}>
+                Filtering
+              </Chip>
+            ) : (
+              <Chip tone="muted" icon={Filter}>
+                Off — nothing filtered
+              </Chip>
+            )
+          ) : undefined
+        }
+      />
+      <div className="px-5 py-4">
+        {prefilter ? (
+          <PrefilterPanel initial={prefilter} />
+        ) : (
+          <p className="text-sm text-coral-ink">
+            Could not load the prefilter: {error ?? "no response"}. Everything
+            else on this page still reflects the live API.
+          </p>
+        )}
+      </div>
+    </Panel>
+  );
+}
+
+/**
+ * The third writable section, and the only one that spends money on its own.
+ *
+ * Last of the three because it is the one that presumes the other two are
+ * right: an automatic schedule multiplies whatever the prefilter lets through
+ * and whatever the instruction tells the agent to say.
+ *
+ * The chip carries three states rather than two. "On" and "off" would hide the
+ * case that actually confuses people — enabled, but sitting still because the
+ * daily cap is spent — which from the outside is indistinguishable from broken.
+ */
+function AutoProcessSection({
+  config,
+  error,
+}: {
+  config: AutoProcessConfig | null;
+  error: string | null;
+}) {
+  return (
+    <Panel>
+      <PanelHeader
+        title="Automatic processing"
+        description="Drafts on a schedule so the queue does not need a human to press start. Writes drafts only — it never sends."
+        action={config ? <AutoProcessChip config={config} /> : undefined}
+      />
+      <div className="px-5 py-4">
+        {config ? (
+          <AutoProcessPanel initial={config} />
+        ) : (
+          <p className="text-sm text-coral-ink">
+            Could not load the schedule: {error ?? "no response"}. Everything
+            else on this page still reflects the live API.
+          </p>
+        )}
+      </div>
+    </Panel>
+  );
+}
+
+function AutoProcessChip({ config }: { config: AutoProcessConfig }) {
+  if (!config.enabled) {
+    return (
+      <Chip tone="muted" icon={CalendarClock}>
+        Off — nothing scheduled
+      </Chip>
+    );
+  }
+  if (config.remaining_today <= 0) {
+    return (
+      <Chip tone="amber" icon={CirclePause}>
+        Paused — daily cap reached
+      </Chip>
+    );
+  }
+  // Neutral, not mint or coral: running on schedule is neither an achievement
+  // nor a hazard, and the prefilter's amber next door has to keep meaning
+  // "this one can lose you leads".
+  return (
+    <Chip tone="neutral" icon={CalendarClock}>
+      On — every 2 hours
+    </Chip>
+  );
+}
+
 function SettingsPanel({ data }: { data: DashboardConfig }) {
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -422,12 +549,9 @@ function SetupPanel({ transport }: { transport: string }) {
         />
         <Instruction
           title="Automate it"
-          body="Both of these are safe to run on a schedule. The Redis lock stops a cron batch colliding with one you start from the dashboard."
-          command={
-            "*/30 * * * * cd /opt/fickles/automated-lead && .venv/bin/python -m app.cli process\n" +
-            "*/15 * * * * cd /opt/fickles/automated-lead && .venv/bin/python -m app.cli sync-replies"
-          }
-          after="Nothing sends automatically. Drafts wait in the Outbox until you press send."
+          body="Drafting is scheduled from Automatic processing above, not from a crontab — the batch size and the daily spend cap are enforced there, and a hand-written process cron would run outside both. Reply polling has no budget to blow, so it stays a plain cron entry."
+          command={"*/15 * * * * cd /opt/fickles/automated-lead && .venv/bin/python -m app.cli sync-replies"}
+          after="Nothing sends automatically either way. Drafts wait in the Outbox until you press send."
         />
         <Instruction
           title="Change what counts as a fit"

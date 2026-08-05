@@ -6,10 +6,14 @@ import {
   createTemplate,
   deleteDraft,
   deleteTemplate,
+  dryRunPrefilter,
   generateTemplate,
   markDraftSent,
   markReplyRead,
+  resetPrefilter,
+  saveAutoProcess,
   saveInstruction,
+  savePrefilter,
   sendDrafts,
   setProcessed,
   startProcessing,
@@ -17,7 +21,16 @@ import {
   updateDraft,
   updateTemplate,
 } from "./server";
-import type { GeneratedTemplate, TargetKind, TemplateInput } from "./types";
+import type {
+  AutoProcessConfig,
+  AutoProcessConfigUpdate,
+  GeneratedTemplate,
+  PrefilterConfig,
+  PrefilterConfigUpdate,
+  PrefilterDryRun,
+  TargetKind,
+  TemplateInput,
+} from "./types";
 
 /**
  * Mutations, as Server Actions.
@@ -236,6 +249,95 @@ export async function saveInstructionAction(payload: {
     revalidatePath("/dashboard/templates");
     return { ok: true };
   } catch (err) {
+    return fail(err);
+  }
+}
+
+// ---------------------------------------------------------- keyword prefilter
+
+/**
+ * Save actions hand the stored config back.
+ *
+ * The backend normalises the lists on write, so what it returns is not always
+ * byte-for-byte what was sent. The editor reloads from this rather than
+ * assuming its own text survived, which is what stops a save from looking like
+ * it half-worked.
+ */
+export type PrefilterResult = ActionResult & { config?: PrefilterConfig };
+
+export async function savePrefilterAction(
+  payload: PrefilterConfigUpdate,
+): Promise<PrefilterResult> {
+  try {
+    const config = await savePrefilter(payload);
+    revalidatePath("/dashboard/configuration");
+    // The prefilter decides which posts ever reach the agent, so the queue on
+    // the pipeline tab is a different queue the moment this changes.
+    revalidatePath("/dashboard/pipeline");
+    return { ok: true, config };
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 422) {
+      return { ok: false, error: `The API rejected the lists: ${err.message}` };
+    }
+    return fail(err);
+  }
+}
+
+export async function resetPrefilterAction(): Promise<PrefilterResult> {
+  try {
+    const config = await resetPrefilter();
+    revalidatePath("/dashboard/configuration");
+    revalidatePath("/dashboard/pipeline");
+    return { ok: true, config };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+/**
+ * Grade a candidate keyword list against posts the agent already judged.
+ *
+ * Deliberately does not revalidate: nothing was written, and this is run
+ * repeatedly while tuning the lists. `savePrefilterAction` is what commits.
+ */
+export async function dryRunPrefilterAction(
+  payload: PrefilterConfigUpdate,
+): Promise<ActionResult & { report?: PrefilterDryRun }> {
+  try {
+    const report = await dryRunPrefilter(payload);
+    return { ok: true, report };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+// -------------------------------------------------- automatic lead processing
+
+/**
+ * Save the schedule, and hand the stored config back.
+ *
+ * Same reason `savePrefilterAction` returns one: the response carries the
+ * observed budget counters, which move on their own. Adopting the returned
+ * config is what keeps the meter honest after a save instead of leaving it
+ * showing figures measured against the previous cap.
+ */
+export type AutoProcessResult = ActionResult & { config?: AutoProcessConfig };
+
+export async function saveAutoProcessAction(
+  payload: AutoProcessConfigUpdate,
+): Promise<AutoProcessResult> {
+  try {
+    const config = await saveAutoProcess(payload);
+    revalidatePath("/dashboard/configuration");
+    // The scheduled runs drain the same queue the Pipeline tab shows, and its
+    // manual Process control shares this budget — both read differently the
+    // moment this changes.
+    revalidatePath("/dashboard/pipeline");
+    return { ok: true, config };
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 422) {
+      return { ok: false, error: `The API rejected the settings: ${err.message}` };
+    }
     return fail(err);
   }
 }
