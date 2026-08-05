@@ -137,12 +137,31 @@ export async function updateDraftAction(
   }
 }
 
+/**
+ * Record a manual draft as delivered. `POST /drafts/{id}/mark-sent`.
+ *
+ * One-way: the backend has no unmark route, and this stamps `sent_at` on a row
+ * nothing else will ever revisit. Callers are expected to gate it on some
+ * evidence the message actually went out — focused send mode arms it only after
+ * the source post has been opened — because there is no undo to offer, only an
+ * after-the-fact "this is what you just marked".
+ *
+ * Revalidates the pipeline as well as the drafts board: `PipelineItem` carries
+ * `draft_status`, and the processed table renders "sent" from it, so leaving
+ * that path stale shows a row as still-to-send after it was marked.
+ */
 export async function markDraftSentAction(id: string): Promise<ActionResult> {
   try {
     await markDraftSent(id);
     revalidatePath("/dashboard/drafts");
+    revalidatePath("/dashboard/pipeline");
     return { ok: true };
   } catch (err) {
+    if (err instanceof ApiError && err.status === 404) {
+      // Deleted from another tab, or the id never existed. Distinguished so a
+      // walkthrough doesn't report a vanished row as a server fault.
+      return { ok: false, error: "That draft no longer exists." };
+    }
     return fail(err);
   }
 }

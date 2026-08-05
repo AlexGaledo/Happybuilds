@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useCallback, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   Check,
@@ -9,6 +9,7 @@ import {
   ExternalLink,
   Hand,
   Inbox,
+  Keyboard,
   Loader2,
   Mail,
   MailOpen,
@@ -32,6 +33,7 @@ import {
   updateDraftAction,
   type ActionResult,
 } from "@/lib/dashboard/actions";
+import { FocusedSend } from "./FocusedSend";
 import { Chip, EmptyState } from "./primitives";
 import { cn } from "@/lib/utils";
 
@@ -71,6 +73,28 @@ export function DraftsBoard({
   );
   const allSelected =
     sendableIds.length > 0 && sendableIds.every((id) => selected.has(id));
+
+  /**
+   * Focused send mode — open/closed only, no URL state.
+   *
+   * Same reasoning as selection: this is a momentary, per-person working mode,
+   * and a shared link that drops someone straight into a queue with a one-way
+   * Mark sent key bound to `m` is the same trap as pre-ticked rows.
+   *
+   * `manual` arrives with `include_sent: true` so already-sent work stays
+   * visible in the column; the walkthrough is only the ones still to do.
+   */
+  const [focusOpen, setFocusOpen] = useState(false);
+  const focusQueue = useMemo(
+    () => manual.filter((d) => d.status === "ready"),
+    [manual],
+  );
+  const exitFocus = useCallback(() => {
+    setFocusOpen(false);
+    // The action already revalidated, but a session may end with a failed mark
+    // rolled back locally; one refresh on the way out settles the board.
+    router.refresh();
+  }, [router]);
 
   function run(work: () => Promise<ActionResult>, okText: string) {
     setFeedback(null);
@@ -289,6 +313,15 @@ export function DraftsBoard({
           icon={Hand}
           tone="amber"
           count={counts?.manual ?? manual.length}
+          action={
+            <ColumnButton
+              onClick={() => setFocusOpen(true)}
+              disabled={focusQueue.length === 0}
+              icon={Keyboard}
+            >
+              Focus
+            </ColumnButton>
+          }
         >
           {manual.length === 0 ? (
             <EmptyState
@@ -323,6 +356,11 @@ export function DraftsBoard({
           )}
         </Column>
       </div>
+
+      {/* Mounted only while open, so the queue is snapshotted at the moment you
+          enter and the overlay's controls stay out of the DOM (and out of the
+          mobile touch-target sweep) the rest of the time. */}
+      {focusOpen && <FocusedSend drafts={focusQueue} onExit={exitFocus} />}
     </div>
   );
 }

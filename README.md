@@ -69,6 +69,23 @@ to send to, and drafts with none (those carry a link to the original post).
 `/dashboard/templates` is the pool the drafting agent picks from. Backend detail
 lives in `../fickles-automated-lead/docs/processing.md`.
 
+**Send-by-hand has a focused mode, and it never touches onlinejobs.ph.** Almost
+every draft lands in that third column — nothing scraped carries a recoverable
+address — so delivery means opening the post and pasting into the site's own
+message box. `FocusedSend.tsx` walks that queue one draft at a time with
+`c`/`s`/`o`/`m` on single keys, which is a context-switching fix, not a clicking
+one. Their terms (clause 7.4) forbid automated access, so the whole mechanism is
+the clipboard plus a normal new tab: no iframe, no injected script, no request
+aimed at their domain, and a person makes every click on their side. Two
+consequences are baked into the UI. `m` arms only after `o` has been used for
+that draft, because `mark-sent` is one-way — the backend has no unmark route —
+and opening the post is the cheapest honest evidence a message could have gone
+out. And the queue is snapshotted on entry rather than re-read from props: the
+action revalidates this page, so following the live list would slide the next
+draft under the cursor between reading it and pressing `m`. A hand-sent message
+also records no message id, so replies to it can never thread back — the screen
+says so rather than leaving the Inbox looking broken.
+
 **Reads go through `server.ts`, writes through `actions.ts`.** Server Actions
 rather than a folder of route handlers, for the same reason
 `/api/dashboard/scrape` is narrow rather than a catch-all proxy: each one
