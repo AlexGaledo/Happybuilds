@@ -29,49 +29,62 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50">
-      <motion.div
-        initial={false}
-        animate={{
-          backgroundColor: scrolled ? "rgba(253,252,247,0.8)" : "rgba(253,252,247,0)",
-          borderColor: scrolled ? "var(--color-border)" : "rgba(0,0,0,0)",
-        }}
-        transition={{ duration: 0.3 }}
+      {/*
+        Nothing at all at the top of the page — no background, no hairline —
+        then a translucent blurred bar once you start scrolling.
+
+        The hairline is an *inset* box-shadow rather than `border-b`. A border
+        occupies layout, so toggling it on scroll nudges everything below by a
+        pixel; an inset shadow paints inside the existing box and costs no
+        space. It is also why only background and shadow are transitioned:
+        `backdrop-filter` is not usefully animatable, so it snaps.
+      */}
+      <div
         className={cn(
-          "border-b backdrop-blur-md",
-          scrolled && "supports-[backdrop-filter]:bg-cream/70",
+          "transition-[background-color,box-shadow] duration-300",
+          scrolled
+            ? "bg-background/75 shadow-[inset_0_-1px_0_0_var(--color-border)] backdrop-blur-xl"
+            : "bg-transparent shadow-none",
         )}
       >
-        <Container className="flex h-16 items-center justify-between sm:h-18">
-          <Logo priority />
+        <Container className="flex h-16 items-center justify-between">
+          {/* Logo and links are one left-hand group, with the CTA pushed to
+              the far right — rather than three items spread evenly, which
+              strands the nav in the middle of a 1440px bar. */}
+          <div className="flex items-center gap-9 lg:gap-12">
+            <Logo priority />
 
-          <nav className="hidden items-center gap-1 md:flex">
-            {navLinks.map((link) => {
+            {/* Plain text links, spaced rather than padded: no pill, no active
+                chip. The active route is carried by weight and colour alone. */}
+            <nav className="hidden items-center gap-7 md:flex lg:gap-9">
+              {navLinks.map((link) => {
               const active =
                 pathname === link.href || pathname.startsWith(`${link.href}/`);
               return (
                 <Link
                   key={link.href}
                   href={link.href}
+                  aria-current={active ? "page" : undefined}
                   className={cn(
-                    "relative rounded-full px-4 py-2 text-sm font-semibold transition-colors",
-                    active ? "text-navy-800" : "text-muted hover:text-navy-800",
+                    "text-sm transition-colors",
+                    active
+                      ? "font-medium text-navy-800"
+                      : "text-muted hover:text-navy-800",
                   )}
                 >
-                  {active && (
-                    <motion.span
-                      layoutId="nav-active"
-                      className="absolute inset-0 -z-10 rounded-full bg-navy-800/6"
-                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                    />
-                  )}
                   {link.label}
                 </Link>
               );
-            })}
-          </nav>
+              })}
+            </nav>
+          </div>
 
           <div className="hidden md:block">
-            <Button href="/contact" size="sm">
+            <Button
+              href="/contact"
+              size="sm"
+              className="h-8 rounded-lg px-3.5 py-0 text-sm font-medium shadow-none hover:translate-y-0 hover:shadow-none"
+            >
               Start a project
             </Button>
           </div>
@@ -86,7 +99,7 @@ export function Navbar() {
             {open ? <X size={22} /> : <Menu size={22} />}
           </button>
         </Container>
-      </motion.div>
+      </div>
 
       <AnimatePresence>
         {open && (
@@ -95,19 +108,19 @@ export function Navbar() {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden border-b border-border bg-cream/95 backdrop-blur-md md:hidden"
+            className="overflow-hidden bg-background/95 shadow-[inset_0_-1px_0_0_var(--color-border)] backdrop-blur-xl md:hidden"
           >
             <Container className="flex flex-col gap-1 py-4">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="rounded-2xl px-4 py-3 text-base font-semibold text-navy-800 hover:bg-navy-800/5"
+                  className="rounded-lg px-4 py-3 text-base font-medium text-navy-800 hover:bg-navy-800/5"
                 >
                   {link.label}
                 </Link>
               ))}
-              <Button href="/contact" className="mt-2 w-full">
+              <Button href="/contact" className="mt-2 w-full rounded-lg">
                 Start a project
               </Button>
             </Container>

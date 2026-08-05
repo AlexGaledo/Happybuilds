@@ -105,6 +105,28 @@
   html {
     /* Lenis controls smooth scroll; keep native off to avoid double-smoothing */
     scroll-behavior: auto;
+
+    /*
+      Hide the page scrollbar. Scrolling itself is untouched — wheel, keys,
+      touch and Lenis all behave exactly as before; only the track is not
+      painted.
+
+      Scoped to the document scroller on purpose. A blanket `*::-webkit-
+      scrollbar` would also strip the dashboard's scrollable tables, where the
+      bar is doing real work: it is the only cue that a wide table continues
+      past the right edge.
+
+      Trade-off worth knowing: Windows paints scrollbars permanently by
+      default, so this removes the "how far down am I" indicator that most
+      visitors on this site will be used to.
+    */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* legacy Edge */
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, current Edge */
   }
 
   body {
