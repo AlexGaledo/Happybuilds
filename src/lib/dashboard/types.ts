@@ -600,9 +600,27 @@ export interface AutoProcessConfig {
   batch_size: number;
   /** Ceiling on leads drafted in a rolling 24 hours. 1..1000. */
   daily_cap: number;
+  /**
+   * How far back a scheduled run looks, by *discovery* time. 0..720, where 0
+   * means no window at all.
+   *
+   * Unlike the two above this is not a spend limit — it is the only setting on
+   * this panel that destroys work. A scheduled run considers nothing older, and
+   * rows that age out are never marked, never logged and never retried, so the
+   * loss is invisible unless `window_backlog` is compared against
+   * `daily_capacity`.
+   */
+  window_hours: number;
   /** Observed from the rows, not from a run counter — manual batches count. */
   processed_last_24h: number;
   remaining_today: number;
+  /**
+   * Unprocessed rows still inside the window. Null when `window_hours` is 0,
+   * where nothing expires and the figure would have no meaning.
+   */
+  window_backlog: number | null;
+  /** What the schedule can get through in a day: the lower of its two ceilings. */
+  daily_capacity: number;
   /**
    * Optional: the backend may not be able to report this, in which case the
    * field is absent rather than null. Render it only when present.
@@ -615,4 +633,5 @@ export interface AutoProcessConfigUpdate {
   enabled: boolean;
   batch_size: number;
   daily_cap: number;
+  window_hours: number;
 }

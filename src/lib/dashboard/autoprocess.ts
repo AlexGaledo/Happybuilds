@@ -21,6 +21,18 @@ export const AUTOPROCESS_MIN_DAILY_CAP = 1;
 export const AUTOPROCESS_MAX_DAILY_CAP = 1000;
 
 /**
+ * How far back a scheduled run looks, in hours. Mirrors the backend's bounds.
+ *
+ * The minimum is genuinely 0 and not 1 — zero means "no window", which is the
+ * safe end of this axis and must stay reachable from the panel. `readCount`
+ * would otherwise refuse it and steer the operator toward the switch below,
+ * which is the wrong advice here: turning the schedule off is not the same as
+ * letting it work the whole queue.
+ */
+export const AUTOPROCESS_MIN_WINDOW_HOURS = 0;
+export const AUTOPROCESS_MAX_WINDOW_HOURS = 720;
+
+/**
  * Scheduled runs in a day.
  *
  * The processing cron fires every 2 hours, matching the scraper's interval.
@@ -115,6 +127,39 @@ export function readThroughput(batchSize: number, dailyCap: number): Throughput 
     limitedBy:
       ceiling === dailyCap ? "both" : ceiling < dailyCap ? "schedule" : "cap",
   };
+}
+
+/** Whether the schedule is keeping up with what the window makes eligible. */
+export interface WindowPressure {
+  /** Unprocessed rows inside the window right now. */
+  backlog: number;
+  /** What the schedule can get through in a day. */
+  capacity: number;
+  /** Rows a day that will age out unprocessed. Zero when keeping up. */
+  shortfall: number;
+  /** True while the window is discarding work. */
+  losing: boolean;
+}
+
+/**
+ * The comparison the window setting lives or dies on.
+ *
+ * A window is a triage rule: rows older than it stop being eligible, and
+ * nothing marks, logs or retries them. That is fine when the schedule outruns
+ * the intake and catastrophic when it does not — and the difference is not
+ * visible from either number alone, which is why it gets a named function and a
+ * dedicated line on the panel rather than being left to the operator to
+ * multiply out.
+ *
+ * Returns null when there is no window, where there is no loss to report.
+ */
+export function readWindowPressure(
+  backlog: number | null,
+  capacity: number,
+): WindowPressure | null {
+  if (backlog === null) return null;
+  const shortfall = Math.max(backlog - capacity, 0);
+  return { backlog, capacity, shortfall, losing: shortfall > 0 };
 }
 
 /**

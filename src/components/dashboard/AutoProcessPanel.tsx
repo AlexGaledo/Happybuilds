@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { CirclePause, Gauge, Inbox, Loader2, Save } from "lucide-react";
+import { CirclePause, Gauge, Inbox, Loader2, Save, TriangleAlert } from "lucide-react";
 import type {
   AutoProcessConfig,
   AutoProcessConfigUpdate,
@@ -11,12 +11,15 @@ import { saveAutoProcessAction } from "@/lib/dashboard/actions";
 import {
   AUTOPROCESS_MAX_BATCH_SIZE,
   AUTOPROCESS_MAX_DAILY_CAP,
+  AUTOPROCESS_MAX_WINDOW_HOURS,
   AUTOPROCESS_MIN_BATCH_SIZE,
   AUTOPROCESS_MIN_DAILY_CAP,
+  AUTOPROCESS_MIN_WINDOW_HOURS,
   AUTOPROCESS_RUNS_PER_DAY,
   formatAgentTime,
   readCount,
   readThroughput,
+  readWindowPressure,
   type NumberFieldState,
 } from "@/lib/dashboard/autoprocess";
 import { absoluteTime, formatNumber, percent, relativeTime } from "@/lib/dashboard/format";
@@ -57,6 +60,7 @@ export function AutoProcessPanel({ initial }: { initial: AutoProcessConfig }) {
   const [enabled, setEnabled] = useState(initial.enabled);
   const [batchText, setBatchText] = useState(String(initial.batch_size));
   const [capText, setCapText] = useState(String(initial.daily_cap));
+  const [windowText, setWindowText] = useState(String(initial.window_hours));
 
   const batch = readCount(batchText, {
     min: AUTOPROCESS_MIN_BATCH_SIZE,
@@ -68,19 +72,33 @@ export function AutoProcessPanel({ initial }: { initial: AutoProcessConfig }) {
     max: AUTOPROCESS_MAX_DAILY_CAP,
     label: "Daily cap",
   });
-  const valid = batch.valid && cap.valid;
+  const recency = readCount(windowText, {
+    min: AUTOPROCESS_MIN_WINDOW_HOURS,
+    max: AUTOPROCESS_MAX_WINDOW_HOURS,
+    label: "Recency window",
+  });
+  const valid = batch.valid && cap.valid && recency.valid;
 
   const dirty =
     enabled !== saved.enabled ||
     batch.value !== saved.batch_size ||
-    cap.value !== saved.daily_cap;
+    cap.value !== saved.daily_cap ||
+    recency.value !== saved.window_hours;
 
   function save() {
-    if (!valid || batch.value === null || cap.value === null) return;
+    if (
+      !valid ||
+      batch.value === null ||
+      cap.value === null ||
+      recency.value === null
+    ) {
+      return;
+    }
     const payload: AutoProcessConfigUpdate = {
       enabled,
       batch_size: batch.value,
       daily_cap: cap.value,
+      window_hours: recency.value,
     };
 
     setFeedback(null);
@@ -93,6 +111,7 @@ export function AutoProcessPanel({ initial }: { initial: AutoProcessConfig }) {
         setEnabled(result.config.enabled);
         setBatchText(String(result.config.batch_size));
         setCapText(String(result.config.daily_cap));
+        setWindowText(String(result.config.window_hours));
         setFeedback({ tone: "ok", text: "Saved." });
         router.refresh();
       } else {
@@ -106,9 +125,24 @@ export function AutoProcessPanel({ initial }: { initial: AutoProcessConfig }) {
       <p className="text-sm leading-relaxed text-muted">
         Runs a drafting batch on a schedule instead of waiting for you to press
         Process. Every{" "}
-        <strong className="font-semibold text-foreground">2 hours</strong>, the
-        cron takes the oldest unqualified leads, up to the batch size below, and
+        <strong className="font-semibold text-foreground">2 hours</strong>, half
+        an hour after each scrape, the cron takes up to the batch size below and
         stops for the day once the cap is reached.
+        {saved.window_hours > 0 ? (
+          <>
+            {" "}
+            With a recency window set it takes the{" "}
+            <strong className="font-semibold text-foreground">newest</strong>{" "}
+            leads first and ignores anything found more than{" "}
+            {formatNumber(saved.window_hours)} hours ago.
+          </>
+        ) : (
+          <>
+            {" "}
+            With no recency window it works the whole queue, oldest first, until
+            it is empty.
+          </>
+        )}
       </p>
 
       {/* The one thing an operator will assume the opposite of, stated once and
@@ -126,6 +160,7 @@ export function AutoProcessPanel({ initial }: { initial: AutoProcessConfig }) {
       </p>
 
       <BudgetReadout config={saved} />
+      <WindowPressureNote config={saved} />
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <NumberField
@@ -147,6 +182,40 @@ export function AutoProcessPanel({ initial }: { initial: AutoProcessConfig }) {
           disabled={pending}
         />
       </div>
+
+      <NumberField
+        id="autoprocess-window-hours"
+        label="Recency window (hours)"
+        hint={`Only consider leads found this recently, newest first. 0 turns the window off and works the whole queue instead. ${AUTOPROCESS_MIN_WINDOW_HOURS}–${AUTOPROCESS_MAX_WINDOW_HOURS}.`}
+        value={windowText}
+        onChange={setWindowText}
+        field={recency}
+        disabled={pending}
+      />
+
+      {/* The window is the one setting here that loses leads rather than
+          spending money, so the warning is unconditional on the value being
+          non-zero — not conditional on a shortfall. An operator typing 24 into
+          the box needs to know what it does before the next cron tick proves
+          it, and by then the rows are already gone. */}
+      {recency.value !== null && recency.value > 0 && (
+        <p className="flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/8 px-3.5 py-3 text-sm leading-relaxed">
+          <TriangleAlert
+            aria-hidden
+            className="mt-0.5 size-4 shrink-0 text-amber-ink"
+          />
+          <span>
+            <strong className="font-semibold">
+              A window discards leads silently.
+            </strong>{" "}
+            Anything found more than {formatNumber(recency.value)} hours ago stops
+            being eligible for a scheduled run — it is not marked, not logged and
+            never picked up later. Only use a window when the schedule can
+            outrun the scraper; the line above says whether it can. Pressing
+            Process by hand still reaches everything.
+          </span>
+        </p>
+      )}
 
       <Projection batch={batch.value} cap={cap.value} spent={saved.processed_last_24h} />
 
@@ -316,6 +385,75 @@ function BudgetReadout({ config }: { config: AutoProcessConfig }) {
         </p>
       )}
     </div>
+  );
+}
+
+/**
+ * Eligible work against what the schedule can actually do.
+ *
+ * This is the only place the cost of a recency window is visible. Everything
+ * else about it looks like an optimisation — fresher leads, shorter queue — and
+ * the rows it drops leave no trace: no `processed_at`, no log line, no count.
+ * Without this comparison an operator sees a healthy panel and a short queue
+ * while two thirds of the day's intake is thrown away, so the shortfall is
+ * stated as a rate ("~N a day") rather than as a snapshot.
+ *
+ * Reads from the saved config rather than the boxes: it describes what is
+ * happening now, not what a half-typed number would do. `Projection` below is
+ * the one that answers "what am I about to save".
+ */
+function WindowPressureNote({ config }: { config: AutoProcessConfig }) {
+  const pressure = readWindowPressure(config.window_backlog, config.daily_capacity);
+  // No window means nothing expires, so there is no shortfall to report and a
+  // reassuring "keeping up" here would be answering a question nobody asked.
+  if (pressure === null) return null;
+
+  return (
+    <p
+      data-testid="autoprocess-window-pressure"
+      className={cn(
+        "flex items-start gap-2 rounded-xl px-3.5 py-3 text-xs leading-relaxed",
+        pressure.losing
+          ? "border border-amber-500/30 bg-amber-500/8"
+          : "bg-navy-800/[0.04] dark:bg-white/5",
+      )}
+    >
+      {pressure.losing ? (
+        <TriangleAlert
+          aria-hidden
+          className="mt-0.5 size-3.5 shrink-0 text-amber-ink"
+        />
+      ) : (
+        <Gauge aria-hidden className="mt-0.5 size-3.5 shrink-0 text-muted" />
+      )}
+      <span>
+        <strong className="font-semibold tabular-nums">
+          {formatNumber(pressure.backlog)}
+        </strong>
+        <span className="text-muted">
+          {" "}
+          unprocessed leads are inside the {formatNumber(config.window_hours)}-hour
+          window, against{" "}
+        </span>
+        <strong className="font-semibold tabular-nums">
+          {formatNumber(pressure.capacity)} a day
+        </strong>
+        <span className="text-muted"> of scheduled capacity. </span>
+        {pressure.losing ? (
+          <strong className="font-semibold text-amber-ink">
+            About {formatNumber(pressure.shortfall)} a day will age out of the
+            window without ever being drafted. Raise the batch size or the cap,
+            tighten the keyword prefilter so fewer leads reach the agent, or set
+            the window to 0 to work the backlog instead.
+          </strong>
+        ) : (
+          <span className="text-muted">
+            The schedule is keeping up, so nothing is being discarded — each run
+            handles roughly what the last scrape brought in.
+          </span>
+        )}
+      </span>
+    </p>
   );
 }
 
