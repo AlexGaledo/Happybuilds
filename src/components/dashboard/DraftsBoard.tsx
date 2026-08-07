@@ -459,6 +459,11 @@ function DraftCard({
           </Chip>
         )}
         {draft.template_name && <Chip tone="muted">{draft.template_name}</Chip>}
+        {/* The post asked for something this message does not contain. Amber,
+            not coral: the draft is fine to send as written, it just goes out
+            knowing a requirement was skipped. */}
+        {draft.requires_portfolio && <Chip tone="amber">Wants past work</Chip>}
+        {draft.requires_proposal && <Chip tone="amber">Wants a proposal</Chip>}
         {draft.status === "failed" && draft.error && (
           <Chip tone="coral" icon={CircleAlert}>
             {truncate(draft.error, 40)}
@@ -471,6 +476,15 @@ function DraftCard({
       {draft.rationale && (
         <p className="mt-2 rounded-lg bg-navy-800/[0.04] px-2.5 py-1.5 text-[11px] leading-relaxed text-muted dark:bg-white/5">
           {draft.rationale}
+        </p>
+      )}
+
+      {/* What the post told applicants to do, and what the draft did about it.
+          Kept next to the rationale so both halves of "why does it read like
+          this" sit in one place. */}
+      {draft.format_notes && (
+        <p className="mt-1.5 rounded-lg bg-navy-800/[0.04] px-2.5 py-1.5 text-[11px] leading-relaxed text-muted dark:bg-white/5">
+          Post’s format: {draft.format_notes}
         </p>
       )}
 

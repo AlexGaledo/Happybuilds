@@ -261,6 +261,21 @@ export interface Draft {
   source_title: string | null;
   rationale: string | null;
   model: string | null;
+  /**
+   * The application format the post asked for and the agent obeyed — a
+   * subject-line code word, questions answered, a length. Null means the post
+   * asked for nothing. Video requirements are ignored by design and never
+   * appear here.
+   */
+  format_notes: string | null;
+  /**
+   * What the post asked for that the draft deliberately does not contain.
+   * Flags, not work: the message still opens with the demo that already
+   * exists, and a human decides whether to attach samples or price anything
+   * before it is sent.
+   */
+  requires_portfolio: boolean;
+  requires_proposal: boolean;
   error: string | null;
   /**
    * Opaque thread key, never parsed. Gmail's own `threadId` under

@@ -348,6 +348,14 @@ export function FocusedSend({
                 {current.template_name && (
                   <Chip tone="muted">{current.template_name}</Chip>
                 )}
+                {/* This is the last screen before the message leaves, which is
+                    the only place the flags can still change what happens. */}
+                {current.requires_portfolio && (
+                  <Chip tone="amber">Wants past work</Chip>
+                )}
+                {current.requires_proposal && (
+                  <Chip tone="amber">Wants a proposal</Chip>
+                )}
               </div>
 
               <Labelled label="Subject">
@@ -360,6 +368,14 @@ export function FocusedSend({
                 <Labelled label="Why the agent wrote this">
                   <p className="text-xs leading-relaxed text-muted">
                     {current.rationale}
+                  </p>
+                </Labelled>
+              )}
+
+              {current.format_notes && (
+                <Labelled label="What the post asked applicants to do">
+                  <p className="text-xs leading-relaxed text-muted">
+                    {current.format_notes}
                   </p>
                 </Labelled>
               )}
