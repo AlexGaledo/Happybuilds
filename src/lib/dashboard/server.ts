@@ -350,7 +350,13 @@ export function getReplies(
 }
 
 export function syncReplies() {
-  return apiSend<{ threads: number; fetched: number; stored: number }>(
+  return apiSend<{
+    threads: number;
+    subjects: number;
+    fetched: number;
+    stored: number;
+    stored_by_subject: number;
+  }>(
     "/drafts/replies/sync",
     { body: {} },
   );
