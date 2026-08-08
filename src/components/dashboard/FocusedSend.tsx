@@ -15,10 +15,14 @@ import {
   Copy,
   ExternalLink,
   Loader2,
+  Trash2,
   X,
 } from "lucide-react";
 import type { Draft } from "@/lib/dashboard/types";
-import { markDraftSentAction } from "@/lib/dashboard/actions";
+import {
+  deleteDraftAction,
+  markDraftSentAction,
+} from "@/lib/dashboard/actions";
 import { Chip } from "./primitives";
 import { cn } from "@/lib/utils";
 
@@ -32,8 +36,13 @@ import { cn } from "@/lib/utils";
  * read it, copy it, find the link, come back, find the card again.
  *
  * This screen removes the finding. It shows exactly one draft, full width, and
- * puts copy / open / mark-sent on single keys. The buttons exist because the
- * same job gets done from a phone, where there is no keyboard.
+ * puts copy / open / mark-sent / delete on single keys. The buttons exist
+ * because the same job gets done from a phone, where there is no keyboard.
+ *
+ * Delete is here because the alternative is worse: a draft you can see is wrong
+ * mid-run otherwise has to be remembered, or the run has to be abandoned to go
+ * find it on the board. It is the only destructive action on the screen, so it
+ * asks twice — see `armedDelete`.
  *
  * **It never touches onlinejobs.ph.** Their terms (clause 7.4) forbid automated
  * access, so the entire mechanism here is the clipboard and a normal new tab.
@@ -71,6 +80,27 @@ export function FocusedSend({
    */
   const [openedIds, setOpenedIds] = useState<ReadonlySet<string>>(new Set());
   const [sentIds, setSentIds] = useState<ReadonlySet<string>>(new Set());
+
+  /**
+   * Drafts binned from this screen. Same treatment as `sentIds`: the row stays
+   * in the frozen queue with a chip on it rather than vanishing, so the index
+   * under the cursor never shifts.
+   */
+  const [deletedIds, setDeletedIds] = useState<ReadonlySet<string>>(new Set());
+
+  /**
+   * Id whose delete is armed, i.e. one press of `d`/the bin has landed and the
+   * next one commits.
+   *
+   * Deleting is the only action here that destroys work rather than recording
+   * it — the draft is gone from the backend and the lead keeps `processed_at`,
+   * so it will not be redrafted by a later batch. Marking sent at least leaves
+   * a sent row behind. `m` is armed by evidence (the post was opened); there is
+   * no equivalent evidence for a delete, so it is armed by asking twice.
+   * Cleared on any navigation, which is what stops a stale arm firing on the
+   * draft after the one you meant.
+   */
+  const [armedDelete, setArmedDelete] = useState<string | null>(null);
 
   /**
    * Result of the last copy, cleared whenever the draft changes.
@@ -115,25 +145,32 @@ export function FocusedSend({
 
   const current: Draft | undefined = queue[index];
   const alreadySent = current ? sentIds.has(current.id) : false;
+  const deleted = current ? deletedIds.has(current.id) : false;
   const opened = current ? openedIds.has(current.id) : false;
-  const canMark = Boolean(current) && opened && !alreadySent;
+  const canMark = Boolean(current) && opened && !alreadySent && !deleted;
 
   /** Why Mark sent is unavailable, in the operator's terms. Null when armed. */
   const markBlockedReason = useMemo(() => {
     if (!current) return "Nothing to mark.";
+    if (deleted) return "Deleted. Nothing left to mark.";
     if (alreadySent) return "Already marked sent.";
     if (!current.source_url) {
       return "This draft has no link to its original post, so it can't be armed here. Mark it from the board instead.";
     }
     if (!opened) return "Open the post first — that's what arms this key.";
     return null;
-  }, [current, alreadySent, opened]);
+  }, [current, alreadySent, deleted, opened]);
 
-  /** Move through the queue. Clamps at both ends and clears the copy status. */
+  /**
+   * Move through the queue. Clamps at both ends, clears the copy status, and
+   * disarms a pending delete — an arm must never outlive the draft it was
+   * aimed at.
+   */
   const go = useCallback(
     (delta: number) => {
       setIndex((i) => Math.min(queue.length - 1, Math.max(0, i + delta)));
       setCopyStatus(null);
+      setArmedDelete(null);
     },
     [queue.length],
   );
@@ -142,6 +179,7 @@ export function FocusedSend({
     async (field: "body" | "subject") => {
       const draft = queue[index];
       if (!draft) return;
+      setArmedDelete(null);
       try {
         // Requires a secure context. True over HTTPS in production and on
         // localhost; the failure branch below is what covers everything else.
@@ -168,10 +206,12 @@ export function FocusedSend({
   const markSent = useCallback(() => {
     const draft = queue[index];
     if (!draft || !openedIds.has(draft.id) || sentIds.has(draft.id)) return;
+    if (deletedIds.has(draft.id)) return;
     if (submitted.current.has(draft.id)) return;
     submitted.current.add(draft.id);
     const name = draft.source_title ?? draft.subject;
 
+    setArmedDelete(null);
     setSentIds((prev) => new Set(prev).add(draft.id));
     setNotice({ tone: "ok", text: `Marked sent: ${name}` });
     go(1);
@@ -193,9 +233,52 @@ export function FocusedSend({
         }. It's still in the queue.`,
       });
     });
-  }, [queue, index, openedIds, sentIds, go]);
+  }, [queue, index, openedIds, sentIds, deletedIds, go]);
+
+  /**
+   * Bin the current draft. First call arms, second one commits.
+   *
+   * Optimistic like `markSent` and for the same reason, but it rolls back into
+   * a *disarmed* state: after a failure the next `d` re-arms rather than
+   * re-firing, so a retry is still two deliberate presses.
+   */
+  const deleteCurrent = useCallback(() => {
+    const draft = queue[index];
+    if (!draft || sentIds.has(draft.id) || deletedIds.has(draft.id)) return;
+
+    if (armedDelete !== draft.id) {
+      setArmedDelete(draft.id);
+      return;
+    }
+    if (submitted.current.has(draft.id)) return;
+    submitted.current.add(draft.id);
+    const name = draft.source_title ?? draft.subject;
+
+    setArmedDelete(null);
+    setDeletedIds((prev) => new Set(prev).add(draft.id));
+    setNotice({ tone: "ok", text: `Deleted: ${name}` });
+    go(1);
+
+    startTransition(async () => {
+      const result = await deleteDraftAction(draft.id);
+      if (result.ok) return;
+      submitted.current.delete(draft.id);
+      setDeletedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(draft.id);
+        return next;
+      });
+      setNotice({
+        tone: "error",
+        text: `Couldn't delete "${name}" — ${
+          result.error ?? "the API refused it"
+        }. It's still in the queue.`,
+      });
+    });
+  }, [queue, index, sentIds, deletedIds, armedDelete, go]);
 
   const markOpened = useCallback((id: string) => {
+    setArmedDelete(null);
     setOpenedIds((prev) => new Set(prev).add(id));
   }, []);
 
@@ -224,6 +307,11 @@ export function FocusedSend({
       // Caps lock shouldn't disarm the whole screen.
       const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
 
+      // Any key that isn't the second `d` cancels a pending delete, including
+      // keys this screen ignores. "Hit something else" has to be a reliable way
+      // out of an arm you didn't mean to set.
+      if (key !== "d") setArmedDelete(null);
+
       switch (key) {
         case "Escape":
           onExit();
@@ -239,6 +327,9 @@ export function FocusedSend({
           break;
         case "m":
           markSent();
+          break;
+        case "d":
+          deleteCurrent();
           break;
         case "j":
         case "ArrowDown":
@@ -259,7 +350,7 @@ export function FocusedSend({
 
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [copyField, go, markSent, onExit]);
+  }, [copyField, deleteCurrent, go, markSent, onExit]);
 
   // Move focus off the board so the shortcuts have somewhere sensible to land
   // and a screen reader announces the dialog rather than the page behind it.
@@ -279,7 +370,10 @@ export function FocusedSend({
 
   // ------------------------------------------------------------------ render
 
-  const remaining = queue.length - sentIds.size;
+  // Both resolutions leave the queue: one records a send, the other bins the
+  // draft. A counter that only knew about sends would still be promising work
+  // that no longer exists.
+  const remaining = queue.length - sentIds.size - deletedIds.size;
 
   return (
     <div
@@ -343,6 +437,11 @@ export function FocusedSend({
                 {alreadySent && (
                   <Chip tone="mint" icon={Check}>
                     Marked sent
+                  </Chip>
+                )}
+                {deleted && (
+                  <Chip tone="coral" icon={Trash2}>
+                    Deleted
                   </Chip>
                 )}
                 {current.template_name && (
@@ -473,6 +572,18 @@ export function FocusedSend({
             >
               Mark sent
             </FocusButton>
+
+            {/* Sits last, past Mark sent, so the destructive control is not
+                adjacent to the one the thumb reaches for every lead. */}
+            <FocusButton
+              onClick={deleteCurrent}
+              icon={Trash2}
+              shortcut="d"
+              tone="danger"
+              disabled={!current || alreadySent || deleted}
+            >
+              {armedDelete === current?.id ? "Delete for good" : "Delete"}
+            </FocusButton>
           </div>
 
           {/* Copy result and arming reason share a row: both explain why the
@@ -481,14 +592,21 @@ export function FocusedSend({
             aria-live="polite"
             className={cn(
               "mt-1.5 min-h-4 text-[11px] leading-relaxed",
-              copyStatus && !copyStatus.ok ? "text-coral-ink" : "text-muted",
+              (copyStatus && !copyStatus.ok) || armedDelete
+                ? "text-coral-ink"
+                : "text-muted",
             )}
           >
-            {copyStatus
-              ? copyStatus.ok
-                ? `${copyStatus.field === "body" ? "Message" : "Subject"} copied — safe to paste.`
-                : `Copy failed. Nothing new is on your clipboard — select the ${copyStatus.field} above and copy it by hand before pasting anything.`
-              : (markBlockedReason ?? "Ready. Paste it into the post, then press m.")}
+            {/* The armed warning outranks everything: it is the one line that
+                describes what the *next* keystroke destroys. */}
+            {armedDelete && armedDelete === current?.id
+              ? "Press d again to delete this draft for good. There is no undo, and the lead won't be drafted again. Anything else cancels."
+              : copyStatus
+                ? copyStatus.ok
+                  ? `${copyStatus.field === "body" ? "Message" : "Subject"} copied — safe to paste.`
+                  : `Copy failed. Nothing new is on your clipboard — select the ${copyStatus.field} above and copy it by hand before pasting anything.`
+                : (markBlockedReason ??
+                  "Ready. Paste it into the post, then press m.")}
           </p>
         </div>
       </footer>
@@ -557,7 +675,7 @@ function FocusButton({
   /** Rendered as a `<kbd>` hint and documented here only — the listener that
    * actually binds it lives in `FocusedSend`. */
   shortcut: string;
-  tone?: "neutral" | "primary";
+  tone?: "neutral" | "primary" | "danger";
   title?: string;
   children?: React.ReactNode;
   "aria-label"?: string;
@@ -566,6 +684,10 @@ function FocusButton({
     neutral:
       "text-muted hover:bg-navy-800/6 hover:text-foreground dark:hover:bg-white/10",
     primary: "text-coral-ink hover:bg-coral-500/10",
+    // Deliberately quieter than `primary` until pressed: an always-red bin on a
+    // bar you drive with one hand invites the accident it warns about, and the
+    // arming step is what actually carries the weight.
+    danger: "text-muted hover:bg-coral-500/10 hover:text-coral-ink",
   } as const;
 
   return (
